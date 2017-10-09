@@ -1,31 +1,35 @@
-public class BloomFilterFNV implements BloomFilter{
-    int filterSize = 0;
-    int dataSize = 0;
-    int numHashes = 0;
+import java.util.BitSet;
 
+public class BloomFilterFNV extends BloomFilter {
+    /**
+     * @param setSize
+     * @param bitsPerElement
+     */
     public BloomFilterFNV(int setSize, int bitsPerElement) {
         this.filterSize = setSize * bitsPerElement;
-    }
+        this.bitsPerElement = bitsPerElement;
 
-    public void add(String s) {
+        this.numHashes = (int) (Math.log(2) * filterSize) / setSize;
 
-        dataSize++;
-    }
+        for (int i = 0; i < numHashes; i++) {
 
-    public boolean appears(String s) {
+            functions.add(new HashFunction() {
+                int offset_basis;
+                int FNV_prime;
 
-        return false;
-    }
+                @Override
+                public int hash(String s) {
+                    int hash = offset_basis;
+                    for (char c : s.toCharArray()) {
+                        // Todo make sure c is a byte
+                        hash = hash ^ c;
+                        hash = hash * FNV_prime;
+                    }
+                    return hash;
+                }
+            });
 
-    public int filerSize() {
-        return this.filterSize;
-    }
-
-    public int dataSize() {
-        return this.dataSize;
-    }
-
-    public int numHashes() {
-        return this.numHashes;
+            filters.add(new BitSet[filterSize]);
+        }
     }
 }
