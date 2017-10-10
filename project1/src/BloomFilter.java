@@ -7,6 +7,7 @@ public abstract class BloomFilter {
     int dataSize = 0;
     int numHashes = 0;
     int bitsPerElement = 0;
+    int setSize = 0;
     LinkedList<HashFunction> functions = new LinkedList<>();
     LinkedList<BitSet[]> filters = new LinkedList<>();
 
