@@ -1,75 +1,54 @@
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 
+/**
+ * @author Annie Steenson
+ */
 public class DynamicFilter extends BloomFilter {
+    LinkedList<BloomFilter> filters = new LinkedList<>();
+
     /**
-     * @param bitsPerElement
+     * Instantiates a DynamicFilter
+     * The size starts at 1000
+     * @param bitsPerElement int
      */
     public DynamicFilter(int bitsPerElement) {
-        this.setSize = 1000;
-        this.filterSize = setSize * bitsPerElement;
         this.bitsPerElement = bitsPerElement;
-
-        addHashFunction();
+        filters.add(new BloomFilterRan(1000, bitsPerElement));
     }
 
+    /**
+     * Adds a String element to the filter
+     * When the the bloom filter is full it adds another filter with twice the size of the last filled filter
+     * @param s String
+     */
     @Override
     public void add(String s) {
-        // TODO What should filtersize return?
-        if (dataSize >= filterSize) {
-            setSize = setSize * 2;
-            filterSize = setSize * bitsPerElement;
-            addHashFunction();
+        BloomFilter filter = filters.getLast();
+
+        if (filter.dataSize >= filter.filterSize) {
+            filter = new BloomFilterRan(filter.filterSize*2, bitsPerElement);
+            filters.add(filter);
         }
 
-        Iterator<BitSet[]> i = filters.iterator();
-        for (HashFunction f: this.functions) {
-            BitSet[] filter = i.next();
-            int hash = f.hash(s.toLowerCase());
-            BitSet b = new BitSet();
-            b.set(0);
-            filter[hash] = b;
-        }
-        dataSize++;
+        filter.add(s);
     }
 
-    private void addHashFunction() {
-        functions.add(new HashFunction() {
-            int prime = -1;
-            int a;
-            int b;
-
-            @Override
-            public int hash(String s) {
-                int hashCode = s.hashCode();
-                Random rand = new Random(); // generate a random number
-                if (prime < 0) {
-                    prime = rand.nextInt(bitsPerElement * setSize);
-
-                    while (!isPrime(prime)) {
-                        prime = rand.nextInt(bitsPerElement * setSize);
-                    }
-                    a = rand.nextInt(prime);
-                    b = rand.nextInt(prime);
-                }
-
-                return ((a * hashCode) + b) % prime;
+    /**
+     * Returns true if a hash value of the String s is set to true in the filter --> could be a false positive
+     * Returns false if the String s is not in any of the filters
+     * @param s String
+     * @return boolean
+     */
+    @Override
+    public boolean appears(String s) {
+        for (BloomFilter f: filters) {
+            if (f.appears(s)) {
+                return true;
             }
-
-            /**
-             * Checks to see if the requested value is prime.
-             */
-            private boolean isPrime(int inputNum) {
-                if (inputNum <= 3 || inputNum % 2 == 0)
-                    return inputNum == 2 || inputNum == 3; //this returns false if number is <=1 & true if number = 2 or 3
-                int divisor = 3;
-                while ((divisor <= Math.sqrt(inputNum)) && (inputNum % divisor != 0))
-                    divisor += 2; //iterates through all possible divisors
-                return inputNum % divisor != 0; //returns true/false
-            }
-        });
-
-        filters.add(new BitSet[filterSize]);
+        }
+        return false;
     }
 }

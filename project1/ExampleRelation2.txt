@@ -1,5 +1,0 @@
-Baseball   Royals
-Football   Vikings
-Baseball   Mets
-Basketball   Bulls
-Hockey   Sabres
