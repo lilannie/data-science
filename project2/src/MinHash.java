@@ -6,7 +6,7 @@ public class MinHash {
      * @param folder
      * @param numPermutations
      */
-    MinHash(String folder, int numPermutations) {
+    public MinHash(String folder, int numPermutations) {
 
     }
 
@@ -15,7 +15,7 @@ public class MinHash {
      * files in the document collection.
      * @return
      */
-    String[] allDocs() {
+    public String[] allDocs() {
         return null;
     }
 
@@ -26,7 +26,7 @@ public class MinHash {
      * @param file2
      * @return
      */
-    double exactJaccard(String file1, String file2) {
+    public double exactJaccard(String file1, String file2) {
         return 0.0;
     }
 
@@ -47,7 +47,7 @@ public class MinHash {
      * @param file2
      * @return
      */
-    double approximateJaccard(String file1, String file2) {
+    public double approximateJaccard(String file1, String file2) {
         return 0.0;
     }
 
@@ -56,15 +56,15 @@ public class MinHash {
      * file2 by comparing the MinHash signatures of file1 and file2.
      * @return
      */
-    int[][] minHashMatrix() {
-        return new int[][];
+    public int[][] minHashMatrix() {
+        return new int[0][0];
     }
 
     /**
      * Returns the number of terms in the document collection.
      * @return
      */
-    int numTerms() {
+    public int numTerms() {
         return 0;
     }
 
@@ -72,7 +72,7 @@ public class MinHash {
      * Returns the number of permutations used to construct the MinHash matrix.
      * @return
      */
-    int numPermutations() {
+    public int numPermutations() {
         return 0;
     }
 }
