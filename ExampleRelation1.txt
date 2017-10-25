@@ -1,5 +1,0 @@
-Baseball   Harry
-Cricket   Sally
-Baseball   Harriet
-Basketball   Harry
-Football   Jim
