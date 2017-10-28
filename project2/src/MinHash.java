@@ -1,4 +1,14 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+
 public class MinHash {
+
+    private String[] documents;
+    private int numTerms;
+    private int numPermutations;
+    private HashMap termDocMatrix;
+
     /**
      * folder is the name of a folder containing our
      * document collection for which we wish to construct MinHash matrix. numPermutations denotes
@@ -7,7 +17,22 @@ public class MinHash {
      * @param numPermutations
      */
     public MinHash(String folder, int numPermutations) {
+        this.numPermutations = numPermutations;
+        File[] files = new File(folder).listFiles();
+        documents = new String[files.length];
+        termDocMatrix = new HashMap<String, HashSet<String>>();
+        HashSet allTerms = new HashSet<String>();
 
+        for(int i = 0; i < documents.length; i++) {
+            // collect all terms and place them in a term-document Hashmap
+            documents[i] = files[i].getAbsolutePath();
+            HashSet documentTerms = collectTerms(documents[i]);
+            allTerms.addAll(documentTerms);
+            termDocMatrix.put(documents[i], documentTerms);
+        }// end for loop over all documents
+
+        numTerms = allTerms.size();
+        System.out.println(numTerms);
     }
 
     /**
@@ -16,7 +41,7 @@ public class MinHash {
      * @return
      */
     public String[] allDocs() {
-        return null;
+        return documents;
     }
 
     /**
@@ -65,7 +90,7 @@ public class MinHash {
      * @return
      */
     public int numTerms() {
-        return 0;
+        return numTerms;
     }
 
     /**
@@ -75,4 +100,47 @@ public class MinHash {
     public int numPermutations() {
         return 0;
     }
-}
+
+    public static void main(String[] args){
+        MinHash m = new MinHash("project2/articles", 10);
+    }
+
+    private HashSet<String> collectTerms(String document){
+        HashSet<String> documentTerms = new HashSet<>();
+        Scanner lineScanner = null;
+
+        try {
+            lineScanner = new Scanner(new File(document));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }// end try-catch FileNotFound
+
+        while (lineScanner.hasNextLine()) {
+            Scanner wordScanner = new Scanner(lineScanner.nextLine());
+
+            while (wordScanner.hasNext()) {
+                String term = clean(wordScanner.next());
+
+                if(term.length() >= 3 && term != "the"){
+                    documentTerms.add(term);
+                }// end if this is a relevant term
+
+            }// end while there are still words in the line
+
+        }// end while there are still lines in the file
+        return documentTerms;
+    }// end function collectTerms
+
+    private String clean(String term){
+        // clean a string to prepare it for comparison
+        String[] punctuation = {".", ",", ":", ";", "'"};
+        String cleaned = term.toLowerCase();
+
+        for(String p : punctuation){
+            cleaned = cleaned.replace(p, "");
+        }// end foreach over punctuation chars
+
+        return cleaned;
+    }// end function clean
+
+}// end class MinHash
