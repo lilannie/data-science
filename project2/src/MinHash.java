@@ -1,13 +1,15 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MinHash {
 
-    private String[] documents;
-    private int numTerms;
-    private int numPermutations;
-    private HashMap termDocMatrix;
+    private HashSet<String> terms;
+    private HashMap<String, HashSet<String>> termDocMatrix;
+    private int[][] minHashMatrix;
+    private HashFunctionRan[] permutations;
 
     /**
      * folder is the name of a folder containing our
@@ -17,23 +19,31 @@ public class MinHash {
      * @param numPermutations
      */
     public MinHash(String folder, int numPermutations) {
-        this.numPermutations = numPermutations;
         File[] files = new File(folder).listFiles();
-        documents = new String[files.length];
-        termDocMatrix = new HashMap<String, HashSet<String>>();
-        HashSet allTerms = new HashSet<String>();
+        termDocMatrix = new HashMap<>();
+        terms = new HashSet<>();
+        permutations = new HashFunctionRan[numPermutations];
 
-        for(int i = 0; i < documents.length; i++) {
+        for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
-            documents[i] = files[i].getAbsolutePath();
-            HashSet documentTerms = collectTerms(documents[i]);
-            allTerms.addAll(documentTerms);
-            termDocMatrix.put(documents[i], documentTerms);
+            String document = files[i].getAbsolutePath();
+            HashSet documentTerms = collectTerms(document);
+            terms.addAll(documentTerms);
+            termDocMatrix.put(document, documentTerms);
         }// end for loop over all documents
 
-        numTerms = allTerms.size();
-        System.out.println(numTerms);
-    }
+        for(int i = 0; i < numPermutations; i++){
+            permutations[i] = new HashFunctionRan(numTerms());
+        }// end for loop creating permutation functions
+
+        String[] documents = allDocs();
+        minHashMatrix = new int[documents.length][numPermutations];
+
+        for(int i = 0; i < documents.length; i++){
+            minHashMatrix[i] = minHashSig(documents[i]);
+        }// end for loop creating our minHash matrix
+
+    }// end MinHash constructor
 
     /**
      * Returns an array of String consisting of all the names of
@@ -41,8 +51,9 @@ public class MinHash {
      * @return
      */
     public String[] allDocs() {
-        return documents;
-    }
+        Set<String> documents = termDocMatrix.keySet();
+        return documents.toArray(new String[documents.size()]);
+    }// end function allDocs
 
     /**
      * Get names of two les (in the document collection) file1 and file2 as
@@ -61,9 +72,32 @@ public class MinHash {
      * @param fileName
      * @return
      */
-    int minHashSig(String fileName) {
-        return 0;
-    }
+    public int[] minHashSig(String fileName) {
+        int[] minHashSig = new int[numPermutations()];
+        HashSet<String> s = termDocMatrix.get(fileName);
+        String[] documentTerms = s.toArray(new String[s.size()]);
+
+        for(int i = 0; i < numPermutations(); i++){
+            // find the minimum for each permutation
+            if(documentTerms.length == 0){
+                // we should't ever get here, but just in case
+                minHashSig[i] = numTerms();
+                continue;
+            }// end if no terms in the document
+
+            int min = permutations[i].hash(documentTerms[0]);
+
+            for(int j = 1; j < documentTerms.length; j++){
+                int newVal = permutations[i].hash(documentTerms[j]);
+                if(newVal < min){
+                    min = newVal;
+                }// end if new minimum value
+            }// end for loop over all terms in the document
+            minHashSig[i] = min;
+        }// end for loop over all permutations
+
+        return minHashSig;
+    }// end function minHashSig
 
     /**
      * Returns the MinHash the minhash signature of the document
@@ -82,35 +116,31 @@ public class MinHash {
      * @return
      */
     public int[][] minHashMatrix() {
-        return new int[0][0];
-    }
+        return minHashMatrix;
+    }// end function minHashMatrix
 
     /**
      * Returns the number of terms in the document collection.
      * @return
      */
     public int numTerms() {
-        return numTerms;
-    }
+        return terms.size();
+    }// end function numTerms
 
     /**
      * Returns the number of permutations used to construct the MinHash matrix.
      * @return
      */
     public int numPermutations() {
-        return 0;
-    }
-
-    public static void main(String[] args){
-        MinHash m = new MinHash("project2/articles", 10);
-    }
+        return permutations.length;
+    }// end function numPermutations
 
     private HashSet<String> collectTerms(String document){
         HashSet<String> documentTerms = new HashSet<>();
         Scanner lineScanner = null;
 
         try {
-            lineScanner = new Scanner(new File(document));
+            lineScanner = new Scanner(new FileInputStream(document), "UTF-8");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }// end try-catch FileNotFound
@@ -142,5 +172,82 @@ public class MinHash {
 
         return cleaned;
     }// end function clean
+
+    private class HashFunctionRan
+    {
+        // create a Random HashFunction for BloomFilterRan
+        int a, b, p;
+
+        public HashFunctionRan(int range)
+        {
+            this.p = getPrime(range);
+            this.a = ThreadLocalRandom.current().nextInt(0, p);
+            this.b = ThreadLocalRandom.current().nextInt(0, p);
+        }// end constructor for HashFunction
+
+        public int hash(String s)
+        {
+            return hash(s.hashCode());
+        }// end function for hashing a string
+
+        private int hash(int x)
+        {
+            return mod(a*x + b, p);
+        }// end function for hashing an integer
+
+        private int getPrime(int n)
+        {
+            // return the first positive prime of at least size n
+            boolean found = false;
+
+            while(!found){
+                // while loop until we find a prime >= n
+                if(isPrime(n)){
+                    // found a prime
+                    found = true;
+                }else{
+                    // did not find prime
+                    if(n == 1 || n % 2 == 0){
+                        n = n + 1;
+                    }else{
+                        n = n + 2;
+                    }// end if we have an even number
+
+                }// end if this is a prime
+
+            }// end while we haven't found a prime
+
+            return n;
+        }// end function getPrime
+
+        private boolean isPrime(int num)
+        {
+            if ( num > 2 && num % 2 == 0 ) {
+                return false;
+            }// end if number > 2 and even
+            int top = (int) Math.sqrt(num) + 1;
+            for(int i = 3; i < top; i+=2){
+                if(num % i == 0){
+                    return false;
+                }// end if we found a divisor, not a prime
+            }// end for loop checking if prime
+            return true;
+        }// end function isPrime
+
+        public int mod(int x, int y)
+        {
+            int result = x % y;
+            if (result < 0){
+                result += y;
+            }// end if result is negative
+            return result;
+        }// end function mod
+
+    }// end class HashFunctionRan
+
+    public static void main(String[] args)
+    {
+        MinHash m = new MinHash("project2/articles", 10);
+    }// end main test function
 
 }// end class MinHash
