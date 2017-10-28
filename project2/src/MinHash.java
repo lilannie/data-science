@@ -63,8 +63,19 @@ public class MinHash {
      * @return
      */
     public double exactJaccard(String file1, String file2) {
-        return 0.0;
-    }
+        HashSet<String> terms1 = termDocMatrix.get(file1);
+        HashSet<String> terms2 = termDocMatrix.get(file2);
+
+        // intersection between file1 and file2 terms
+        terms1.retainAll(terms2);
+
+        // union of file1 and file2 terms
+        HashSet<String> union = new HashSet<>();
+        union.addAll(terms1);
+        union.addAll(terms2);
+
+        return (double) terms1.size() / union.size();
+    }// end function exactJaccard
 
     /**
      * Returns the MinHash the minhash signature of the document
@@ -107,12 +118,21 @@ public class MinHash {
      * @return
      */
     public double approximateJaccard(String file1, String file2) {
-        return 0.0;
-    }
+        int[] signature1 = minHashSig(file1);
+        int[] signature2 = minHashSig(file2);
+        int matches = 0;
+
+        for(int i = 0; i < numPermutations(); i++){
+            if(signature1[i] == signature2[i]){
+                matches++;
+            }// end if components in minHashSignature match
+        }// end for loop over number of permutations
+
+        return (double) matches / numPermutations();
+    }// end function approximateJaccard
 
     /**
-     * Estimates and returns the Jaccard similarity of documents file1 and
-     * file2 by comparing the MinHash signatures of file1 and file2.
+     * Returns the MinHash Matrix of the collection.
      * @return
      */
     public int[][] minHashMatrix() {
@@ -135,6 +155,11 @@ public class MinHash {
         return permutations.length;
     }// end function numPermutations
 
+    /**
+     * Returns set of terms in a document after cleaning up the file
+     * and removing stop words
+     * @return
+     */
     private HashSet<String> collectTerms(String document){
         HashSet<String> documentTerms = new HashSet<>();
         Scanner lineScanner = null;
@@ -161,6 +186,10 @@ public class MinHash {
         return documentTerms;
     }// end function collectTerms
 
+    /**
+     * Clean a string before adding it to term collection
+     * @return
+     */
     private String clean(String term){
         // clean a string to prepare it for comparison
         String[] punctuation = {".", ",", ":", ";", "'"};
@@ -247,7 +276,12 @@ public class MinHash {
 
     public static void main(String[] args)
     {
-        MinHash m = new MinHash("project2/articles", 10);
+        String base_dir = System.getProperty("user.dir") + "\\project2\\articles\\";
+        MinHash m = new MinHash(base_dir, 300);
+        String file1 = base_dir + "baseball1.txt";
+        String file2 = base_dir + "baseball2.txt";
+        System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
+        System.out.println("Approx Jaccard: " + m.approximateJaccard(file1, file2));
     }// end main test function
 
 }// end class MinHash
