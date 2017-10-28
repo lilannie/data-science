@@ -176,7 +176,7 @@ public class MinHash {
             while (wordScanner.hasNext()) {
                 String term = clean(wordScanner.next());
 
-                if(term.length() >= 3 && term != "the"){
+                if(term.length() >= 3 && !term.equals("the")){
                     documentTerms.add(term);
                 }// end if this is a relevant term
 
