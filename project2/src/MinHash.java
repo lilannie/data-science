@@ -7,7 +7,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MinHash {
 
     private HashMap<String, HashSet<String>> termDocMatrix;
-    private int[][] minHashMatrix;
     private HashFunctionRan[] permutations;
     private int numTerms;
 
@@ -36,13 +35,6 @@ public class MinHash {
         for(int i = 0; i < numPermutations; i++){
             permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
-
-        String[] documents = allDocs();
-        minHashMatrix = new int[documents.length][numPermutations];
-
-        for(int i = 0; i < documents.length; i++){
-            minHashMatrix[i] = minHashSig(documents[i]);
-        }// end for loop creating our minHash matrix
 
     }// end MinHash constructor
 
@@ -90,6 +82,13 @@ public class MinHash {
         String[] documentTerms = s.toArray(new String[s.size()]);
 
         for(int i = 0; i < numPermutations(); i++){
+
+
+            if(documentTerms.length == 0){
+                minHashSig[i] = numTerms();
+                continue;
+            }
+
             // find the minimum for each permutation
             int min = permutations[i].hash(documentTerms[0]);
 
@@ -131,6 +130,13 @@ public class MinHash {
      * @return
      */
     public int[][] minHashMatrix() {
+        String[] documents = allDocs();
+        int[][] minHashMatrix = new int[documents.length][numPermutations()];
+
+        for(int i = 0; i < documents.length; i++){
+            minHashMatrix[i] = minHashSig(documents[i]);
+        }// end for loop creating our minHash matrix
+
         return minHashMatrix;
     }// end function minHashMatrix
 

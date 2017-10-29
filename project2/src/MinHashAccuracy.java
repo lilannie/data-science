@@ -11,9 +11,37 @@ public class MinHashAccuracy {
      * @param errorParam
      * @return
      */
-    public int accuracy(String folder, double errorParam) {
+    public int accuracy(String folder, int numPermutations, double errorParam) {
         int numError = 0;
+        MinHash m = new MinHash(folder, numPermutations);
+        String[] documents = m.allDocs();
+
+        for(String documentA : documents){
+
+            for(String documentB : documents){
+
+                if(!documentA.equals(documentB)){
+                    double exact = m.exactJaccard(documentA, documentB);
+                    double approximate = m.approximateJaccard(documentA, documentB);
+
+                    if(Math.abs(exact - approximate) > errorParam){
+                        numError++;
+                    }// end if the difference is greater than the error parameter
+
+                }// end if the two documents differ
+
+            }// end inner document for loop
+
+        }// end outer document for loop
 
         return numError;
-    }
-}
+    }// end function accuracy
+
+    public static void main(String[] args)
+    {
+        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        MinHashAccuracy m = new MinHashAccuracy();
+        System.out.println(m.accuracy(base_dir, 500, 0.02));
+    }// end main test function
+
+}// end class MinHashAccuracy
