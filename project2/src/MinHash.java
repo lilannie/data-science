@@ -6,10 +6,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MinHash {
 
-    private HashSet<String> terms;
     private HashMap<String, HashSet<String>> termDocMatrix;
     private int[][] minHashMatrix;
     private HashFunctionRan[] permutations;
+    private int numTerms;
 
     /**
      * folder is the name of a folder containing our
@@ -21,8 +21,8 @@ public class MinHash {
     public MinHash(String folder, int numPermutations) {
         File[] files = new File(folder).listFiles();
         termDocMatrix = new HashMap<>();
-        terms = new HashSet<>();
         permutations = new HashFunctionRan[numPermutations];
+        HashSet terms = new HashSet<String>();
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
@@ -32,8 +32,9 @@ public class MinHash {
             termDocMatrix.put(document, documentTerms);
         }// end for loop over all documents
 
+        numTerms = terms.size();
         for(int i = 0; i < numPermutations; i++){
-            permutations[i] = new HashFunctionRan(numTerms());
+            permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
 
         String[] documents = allDocs();
@@ -90,12 +91,6 @@ public class MinHash {
 
         for(int i = 0; i < numPermutations(); i++){
             // find the minimum for each permutation
-            if(documentTerms.length == 0){
-                // we should't ever get here, but just in case
-                minHashSig[i] = numTerms();
-                continue;
-            }// end if no terms in the document
-
             int min = permutations[i].hash(documentTerms[0]);
 
             for(int j = 1; j < documentTerms.length; j++){
@@ -144,7 +139,7 @@ public class MinHash {
      * @return
      */
     public int numTerms() {
-        return terms.size();
+        return numTerms;
     }// end function numTerms
 
     /**
@@ -202,6 +197,9 @@ public class MinHash {
         return cleaned;
     }// end function clean
 
+    /**
+     * Hash function to represent a permutation / one-to-one function
+     */
     private class HashFunctionRan
     {
         // create a Random HashFunction for BloomFilterRan
@@ -276,10 +274,10 @@ public class MinHash {
 
     public static void main(String[] args)
     {
-        String base_dir = System.getProperty("user.dir") + "\\project2\\articles\\";
-        MinHash m = new MinHash(base_dir, 300);
-        String file1 = base_dir + "baseball1.txt";
-        String file2 = base_dir + "baseball2.txt";
+        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        MinHash m = new MinHash(base_dir, 500);
+        String file1 = base_dir + "baseball0.txt";
+        String file2 = base_dir + "baseball0.txt.copy1";
         System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
         System.out.println("Approx Jaccard: " + m.approximateJaccard(file1, file2));
     }// end main test function
