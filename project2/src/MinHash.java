@@ -8,6 +8,8 @@ public class MinHash {
     private HashMap<String, HashSet<String>> termDocMatrix;
     private HashFunctionRan[] permutations;
     private int numTerms;
+    private String[] documents;
+    private int[][] minHashMatrix;
 
     /**
      * folder is the name of a folder containing our
@@ -21,6 +23,7 @@ public class MinHash {
         termDocMatrix = new HashMap<>();
         permutations = new HashFunctionRan[numPermutations];
         HashSet terms = new HashSet<String>();
+        documents = new String[files.length];
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
@@ -28,6 +31,7 @@ public class MinHash {
             HashSet documentTerms = collectTerms(document);
             terms.addAll(documentTerms);
             termDocMatrix.put(document, documentTerms);
+            documents[i] = document;
         }// end for loop over all documents
 
         numTerms = terms.size();
@@ -35,6 +39,11 @@ public class MinHash {
             permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
 
+        minHashMatrix = new int[documents.length][numPermutations()];
+
+        for(int i = 0; i < documents.length; i++){
+            minHashMatrix[i] = minHashSig(documents[i]);
+        }// end for loop creating our minHash matrix
     }// end MinHash constructor
 
     /**
@@ -43,8 +52,7 @@ public class MinHash {
      * @return
      */
     public String[] allDocs() {
-        Set<String> documents = termDocMatrix.keySet();
-        return documents.toArray(new String[documents.size()]);
+        return documents;
     }// end function allDocs
 
     /**
@@ -108,10 +116,10 @@ public class MinHash {
      * @return
      */
     public double approximateJaccard(String file1, String file2) {
-        int[] signature1 = minHashSig(file1);
-        int[] signature2 = minHashSig(file2);
-        int matches = 0;
+        int[] signature1 = minHashMatrix[getIndex(file1)];
+        int[] signature2 = minHashMatrix[getIndex(file2)];
 
+        int matches = 0;
         for(int i = 0; i < numPermutations(); i++){
             if(signature1[i] == signature2[i]){
                 matches++;
@@ -126,13 +134,6 @@ public class MinHash {
      * @return
      */
     public int[][] minHashMatrix() {
-        String[] documents = allDocs();
-        int[][] minHashMatrix = new int[documents.length][numPermutations()];
-
-        for(int i = 0; i < documents.length; i++){
-            minHashMatrix[i] = minHashSig(documents[i]);
-        }// end for loop creating our minHash matrix
-
         return minHashMatrix;
     }// end function minHashMatrix
 
@@ -199,12 +200,21 @@ public class MinHash {
         return cleaned;
     }// end function clean
 
+    private int getIndex(String file){
+        for(int i = 0; i < documents.length; i++){
+            if(documents[i].equals(file)){
+                return i;
+            }// end if string equals file we're looking for
+        }// end for loop over list
+        return -1;
+    }// end function findIndex
+
     public static void main(String[] args)
     {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         MinHash m = new MinHash(base_dir, 500);
-        String file1 = base_dir + "space-1.txt";
-        String file2 = base_dir + "space-2.txt";
+        String file1 = base_dir + "space-0.txt";
+        String file2 = base_dir + "space-1.txt";
         System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
         System.out.println("Approx Jaccard: " + m.approximateJaccard(file1, file2));
     }// end main test function
