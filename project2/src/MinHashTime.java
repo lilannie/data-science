@@ -1,3 +1,5 @@
+import java.util.HashMap;
+
 public class MinHashTime {
     /**
      * Gets name of a folder, number of permutations to be used as parameters, and creates an
@@ -17,32 +19,31 @@ public class MinHashTime {
      */
     public void timer(String folder, int numPermutations)
     {
-        MinHash m = new MinHash(folder, numPermutations);
-        String[] documents = m.allDocs();
-
         long start = System.currentTimeMillis();
-        for(String documentA : documents){
-
-            for(String documentB : documents){
-
-                if(!documentA.equals(documentB)){
-                    m.exactJaccard(documentA, documentB);
-                }// end if the two documents differ
-
-            }// end inner document for loop
-
-        }// end outer document for loop
-
+        MinHash m = new MinHash(folder, numPermutations);
         long end = System.currentTimeMillis();
-        long secondsTaken = (end - start) * 1000;
-        System.out.println("Time taken to compute similarities between each pair: " + secondsTaken);
+        double secondsTaken = (double) (end - start) / 1000;
+        System.out.printf("Time taken to compute minhash matrix: %.3f seconds\n", secondsTaken);
+
+        String[] documents = m.allDocs();
+        HashMap<Integer, Integer> pairs = new HashMap<>();
 
         start = System.currentTimeMillis();
-        m.minHashMatrix();
-        end = System.currentTimeMillis();
+        int key;
+        for(int i = 0; i < documents.length; i++) {
 
-        secondsTaken = (end - start) * 1000;
-        System.out.println("Time taken to compute minhash matrix: " + secondsTaken);
+            for (int j = 0; j < documents.length; j++) {
+                key = documents[i].hashCode() + documents[j].hashCode();
+
+                if (!pairs.containsKey(key) && !documents[i].equals(documents[j])) {
+                    m.exactJaccard(documents[i], documents[j]);
+                }// end if we havent seen this pair yet
+            }// end for loop over all documents
+        }// end for loop over documents
+
+        end = System.currentTimeMillis();
+        secondsTaken = (double) (end - start) / 1000;
+        System.out.printf("Time taken to compute similarities between each pair: %.3f seconds\n", secondsTaken);
     }// end function timer
 
     public static void main(String[] args){
