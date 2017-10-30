@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class MinHashTime {
     /**
      * Gets name of a folder, number of permutations to be used as parameters, and creates an
@@ -49,7 +47,8 @@ public class MinHashTime {
 
     public static void main(String[] args){
         MinHashTime t = new MinHashTime();
-        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         t.timer(base_dir, 500);
-    }
+    }// end main test function
+
 }// end class MinHashTime

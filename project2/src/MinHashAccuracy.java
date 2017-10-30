@@ -16,7 +16,6 @@ public class MinHashAccuracy {
         MinHash m = new MinHash(folder, numPermutations);
         String[] documents = m.allDocs();
 
-
         for(String documentA : documents){
 
             for(String documentB : documents){
@@ -42,7 +41,7 @@ public class MinHashAccuracy {
     {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         MinHashAccuracy m = new MinHashAccuracy();
-        System.out.println(m.accuracy(base_dir, 50, 0.09));
+        System.out.println(m.accuracy(base_dir, 200, 0.04));
     }// end main test function
 
 }// end class MinHashAccuracy
