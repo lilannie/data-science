@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MinHash {
 
@@ -74,7 +73,7 @@ public class MinHash {
      * Returns the MinHash the minhash signature of the document
      * named fileName, which is an array of ints.
      * @param fileName
-     * @return
+     * @return int[]
      */
     public int[] minHashSig(String fileName) {
         int[] minHashSig = new int[numPermutations()];
@@ -82,7 +81,6 @@ public class MinHash {
         String[] documentTerms = s.toArray(new String[s.size()]);
 
         for(int i = 0; i < numPermutations(); i++){
-
 
             if(documentTerms.length == 0){
                 minHashSig[i] = numTerms();
@@ -203,84 +201,10 @@ public class MinHash {
         return cleaned;
     }// end function clean
 
-    /**
-     * Hash function to represent a permutation / one-to-one function
-     */
-    private class HashFunctionRan
-    {
-        // create a Random HashFunction for BloomFilterRan
-        int a, b, p;
-
-        public HashFunctionRan(int range)
-        {
-            this.p = getPrime(range);
-            this.a = ThreadLocalRandom.current().nextInt(0, p);
-            this.b = ThreadLocalRandom.current().nextInt(0, p);
-        }// end constructor for HashFunction
-
-        public int hash(String s)
-        {
-            return hash(s.hashCode());
-        }// end function for hashing a string
-
-        private int hash(int x)
-        {
-            return mod(a*x + b, p);
-        }// end function for hashing an integer
-
-        private int getPrime(int n)
-        {
-            // return the first positive prime of at least size n
-            boolean found = false;
-
-            while(!found){
-                // while loop until we find a prime >= n
-                if(isPrime(n)){
-                    // found a prime
-                    found = true;
-                }else{
-                    // did not find prime
-                    if(n == 1 || n % 2 == 0){
-                        n = n + 1;
-                    }else{
-                        n = n + 2;
-                    }// end if we have an even number
-
-                }// end if this is a prime
-
-            }// end while we haven't found a prime
-
-            return n;
-        }// end function getPrime
-
-        private boolean isPrime(int num)
-        {
-            if ( num > 2 && num % 2 == 0 ) {
-                return false;
-            }// end if number > 2 and even
-            int top = (int) Math.sqrt(num) + 1;
-            for(int i = 3; i < top; i+=2){
-                if(num % i == 0){
-                    return false;
-                }// end if we found a divisor, not a prime
-            }// end for loop checking if prime
-            return true;
-        }// end function isPrime
-
-        public int mod(int x, int y)
-        {
-            int result = x % y;
-            if (result < 0){
-                result += y;
-            }// end if result is negative
-            return result;
-        }// end function mod
-
-    }// end class HashFunctionRan
-
     public static void main(String[] args)
     {
-        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        String base_dir = System.getProperty("user.dir") + "/project2/F17PA2/";
         MinHash m = new MinHash(base_dir, 500);
         String file1 = base_dir + "baseball0.txt";
         String file2 = base_dir + "baseball0.txt.copy1";
