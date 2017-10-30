@@ -17,7 +17,16 @@ public class NearDuplicates {
     public ArrayList<String> nearDuplicateDetector(String folder, int numPermutations, double s, String docName) {
         MinHash m = new MinHash(folder, numPermutations);
         int[][] minHashMatrix = m.minHashMatrix();
-        LSH l = new LSH(minHashMatrix, m.allDocs(), 100);
+        double optimalBands = 0;
+        double optimalChars;
+
+        do {
+            optimalBands++;
+            optimalChars = numPermutations / optimalBands;
+        }
+        while(Math.pow(1/optimalBands, 1/optimalChars) <= s);
+
+        LSH l = new LSH(minHashMatrix, m.allDocs(), (int) optimalBands);
         return l.nearDuplicatesOf(docName);
     }// end function nearDuplicateDetector
 
@@ -26,7 +35,9 @@ public class NearDuplicates {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         NearDuplicates n = new NearDuplicates();
         String file = base_dir + "space-0.txt";
-        System.out.println(n.nearDuplicateDetector(base_dir,100, 0.02, file));
+        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,100, 0.95, file);
+        System.out.println(nearDuplicates);
+        System.out.println(nearDuplicates.size());
     }// end main test function
 
 }// end class NearDuplicates
