@@ -4,6 +4,8 @@ import java.util.ArrayList;
  *  class puts together MinHash and LSH to detect near duplicates in a document collection
  */
 public class NearDuplicates {
+
+    static final double DIFFERENCE_THRESHOLD = 0.02;
     /**
      *
      * @param folder name of the the folder containing documents
@@ -16,7 +18,6 @@ public class NearDuplicates {
      */
     public ArrayList<String> nearDuplicateDetector(String folder, int numPermutations, double s, String docName) {
         MinHash m = new MinHash(folder, numPermutations);
-        int[][] minHashMatrix = m.minHashMatrix();
         double optimalBands = 0;
         double optimalChars;
 
@@ -24,9 +25,12 @@ public class NearDuplicates {
             optimalBands++;
             optimalChars = numPermutations / optimalBands;
         }
-        while(Math.pow(1/optimalBands, 1/optimalChars) <= s);
+        while(!isClose(Math.pow(1/optimalBands, 1/optimalChars), s));
 
-        LSH l = new LSH(minHashMatrix, m.allDocs(), (int) optimalBands);
+        System.out.println("Optimal Bands: " + optimalBands);
+        System.out.println("Optimal value: " + Math.pow(1/optimalBands, 1/optimalChars));
+
+        LSH l = new LSH(m.minHashMatrix(), m.allDocs(), (int) optimalBands);
         return l.nearDuplicatesOf(docName);
     }// end function nearDuplicateDetector
 
@@ -35,9 +39,13 @@ public class NearDuplicates {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         NearDuplicates n = new NearDuplicates();
         String file = base_dir + "space-0.txt";
-        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,100, 0.95, file);
+        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,200, 0.5, file);
         System.out.println(nearDuplicates);
         System.out.println(nearDuplicates.size());
     }// end main test function
+
+    private boolean isClose(double a, double b){
+        return Math.abs(a-b) <= DIFFERENCE_THRESHOLD;
+    }// end function isClose()
 
 }// end class NearDuplicates

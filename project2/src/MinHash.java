@@ -62,11 +62,9 @@ public class MinHash {
         terms1.retainAll(terms2);
 
         // union of file1 and file2 terms
-        HashSet<String> union = new HashSet<>();
-        union.addAll(terms1);
-        union.addAll(terms2);
+        terms2.addAll(terms1);
 
-        return (double) terms1.size() / union.size();
+        return (double) terms1.size() / terms2.size();
     }// end function exactJaccard
 
     /**
@@ -205,8 +203,8 @@ public class MinHash {
     {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         MinHash m = new MinHash(base_dir, 500);
-        String file1 = base_dir + "space-0.txt";
-        String file2 = base_dir + "space-1.txt";
+        String file1 = base_dir + "space-1.txt";
+        String file2 = base_dir + "space-2.txt";
         System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
         System.out.println("Approx Jaccard: " + m.approximateJaccard(file1, file2));
     }// end main test function
