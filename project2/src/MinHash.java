@@ -211,10 +211,10 @@ public class MinHash {
 
     public static void main(String[] args)
     {
-        String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
         MinHash m = new MinHash(base_dir, 500);
-        String file1 = base_dir + "space-0.txt";
-        String file2 = base_dir + "space-1.txt";
+        String file1 = base_dir + "baseball0.txt";
+        String file2 = base_dir + "baseball0.txt.copy1";
         System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
         System.out.println("Approx Jaccard: " + m.approximateJaccard(file1, file2));
     }// end main test function
