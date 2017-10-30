@@ -14,11 +14,9 @@ public class NearDuplicates {
      *          by calling the method nearDuplicates. Note that this list may contain some False Positives|
      *          Documents that are less than s-similar to docName.
      */
-    public ArrayList<String> nearDuplicateDetector(String folder, int numPermutations, int s, String docName) {
+    public ArrayList<String> nearDuplicateDetector(String folder, int numPermutations, double s, String docName) {
         MinHash m = new MinHash(folder, numPermutations);
         int[][] minHashMatrix = m.minHashMatrix();
-
-        
 
         LSH l = new LSH(minHashMatrix, m.allDocs(), 100);
         return l.nearDuplicatesOf(docName);
@@ -29,7 +27,7 @@ public class NearDuplicates {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         NearDuplicates n = new NearDuplicates();
         String file = base_dir + "space-0.txt";
-        System.out.println(n.nearDuplicateDetector(base_dir, `100, 0.8, file))
+        System.out.println(n.nearDuplicateDetector(base_dir, 100, 0.8, file));
     }// end main test function
 
 }// end class NearDuplicates
