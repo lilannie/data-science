@@ -15,7 +15,21 @@ public class NearDuplicates {
      *          Documents that are less than s-similar to docName.
      */
     public ArrayList<String> nearDuplicateDetector(String folder, int numPermutations, int s, String docName) {
-        ArrayList<String> nearDuplicates = new ArrayList<>();
-        return nearDuplicates;
-    }
-}
+        MinHash m = new MinHash(folder, numPermutations);
+        int[][] minHashMatrix = m.minHashMatrix();
+
+        
+
+        LSH l = new LSH(minHashMatrix, m.allDocs(), 100);
+        return l.nearDuplicatesOf(docName);
+    }// end function nearDuplicateDetector
+
+    public static void main(String[] args)
+    {
+        String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        NearDuplicates n = new NearDuplicates();
+        String file = base_dir + "space-0.txt";
+        System.out.println(n.nearDuplicateDetector(base_dir, `100, 0.8, file))
+    }// end main test function
+
+}// end class NearDuplicates
