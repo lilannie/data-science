@@ -3,12 +3,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class LSH {
-    ArrayList<HashMap<Integer, HashSet<String>>> bandTables;
-    HashFunctionRan[] hashfunctions;
+    int[][] minHashMatrix;
+    int bands;
+
     int numDocuments;
     int numHashFunctions;
     int rowsPerBand;
     boolean rowsDivideEqually;
+
+    ArrayList<HashMap<Integer, HashSet<String>>> bandTables;
+    HashFunctionRan[] hashfunctions;
+
+
     /**
      *
      * @param minHashMatrix the MinHash matrix of the document collection
@@ -17,6 +23,9 @@ public class LSH {
      * @param bands the number of bands to be used to perform locality sensitive hashing
      */
     public LSH(int[][] minHashMatrix, String[] docNames, int bands) {
+        this.bands = bands;
+        this.minHashMatrix = minHashMatrix;
+
         numDocuments = minHashMatrix.length;
         numHashFunctions = minHashMatrix[0].length;
         rowsPerBand = numHashFunctions / bands;
@@ -67,9 +76,32 @@ public class LSH {
      * @return an array list of names of the near duplicate documents.
      */
     public ArrayList<String> nearDuplicatesOf(String docName) {
-        ArrayList<String> duplicates = new ArrayList<>();
+        ArrayList<String> nearDuplicates = new ArrayList<>();
 
-        return duplicates;
+        // For each band
+        for (int currBand = 0; currBand < bands; currBand++) {
+            // Corresponding table and hash function respective to the current band
+            HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
+            HashFunctionRan hashFunc = hashfunctions[currBand];
+
+            // For each document
+            if (currBand == bands - 1 && !rowsDivideEqually) {
+                rowsPerBand += (numHashFunctions) - (rowsPerBand * bands);
+            }
+
+            // For each element in the band create a string
+            String bandString = "";
+            for (int currRow = 0; currRow < rowsPerBand; currRow++) {
+                int rowIndex = currRow + (currBand * rowsPerBand);
+                bandString += minHashMatrix[rowIndex];
+            }
+
+            // Hash the string
+            int hashVal = hashFunc.hash(bandString);
+            nearDuplicates.addAll(table.get(hashVal));
+        }
+
+        return nearDuplicates;
     }
 
     public static void main(String args[]) {
