@@ -51,6 +51,8 @@ public class LSH {
 
             // For each document
             for (int currDoc = 0; currDoc < numDocuments; currDoc++) {
+
+                // If it is the last band, add any left over bands
                 if (currBand == bands - 1 && !rowsDivideEqually) {
                     rowsPerBand += (numHashFunctions) - (rowsPerBand * bands);
                 }
@@ -84,7 +86,7 @@ public class LSH {
             HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
             HashFunctionRan hashFunc = hashfunctions[currBand];
 
-            // For each document
+            // If it is the last band, add any left over bands
             if (currBand == bands - 1 && !rowsDivideEqually) {
                 rowsPerBand += (numHashFunctions) - (rowsPerBand * bands);
             }
