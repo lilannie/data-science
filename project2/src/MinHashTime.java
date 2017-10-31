@@ -26,18 +26,11 @@ public class MinHashTime {
         System.out.printf("Time taken to compute minhash matrix: %.3f seconds\n", secondsTaken);
 
         String[] documents = m.allDocs();
-        HashMap<Integer, Integer> pairs = new HashMap<>();
-
         start = System.currentTimeMillis();
-        int key;
         for(int i = 0; i < documents.length; i++) {
             for (int j = i + 1; j < documents.length; j++) {
-                key = documents[i].hashCode() + documents[j].hashCode();
-
-                if (!pairs.containsKey(key) && !documents[i].equals(documents[j])) {
-                    m.exactJaccard(documents[i], documents[j]);
-                    m.approximateJaccard(documents[i], documents[j]);
-                }// end if we havent seen this pair yet
+                m.exactJaccard(documents[i], documents[j]);
+                m.approximateJaccard(documents[i], documents[j]);
             }// end for loop over all documents
         }// end for loop over documents
 
@@ -50,7 +43,6 @@ public class MinHashTime {
         MinHashTime t = new MinHashTime();
         //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         String base_dir = System.getProperty("user.dir") + "/project2/space/";
-
         t.timer(base_dir, 600);
     }// end main test function
 
