@@ -6,6 +6,7 @@ import java.util.HashSet;
 public class LSH {
     private int[][] minHashMatrix;
     private int bands;
+    private HashMap<String, Integer> docIndex;
 
     private int numDocuments;
     private int numHashFunctions;
@@ -14,7 +15,6 @@ public class LSH {
 
     private ArrayList<HashMap<Integer, HashSet<String>>> bandTables;
     private HashFunctionRan[] hashfunctions;
-    private HashMap<String, Integer> docIndex;
 
     /**
      *
