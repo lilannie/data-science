@@ -5,10 +5,12 @@ import java.util.*;
 
 public class MinHash {
 
-    private HashMap<String, HashSet<String>> termDocMatrix;
-    private HashMap<String, Integer> documentIndex;
+    private HashMap<String, HashSet<String>> termDocMatrix; // Key = document name, Value = set of terms in document
+    private HashMap<String, BitSet> docBinaryVectors;
     private HashFunctionRan[] permutations;
-    private int numTerms;
+    private HashMap<String, Integer> documentIndex; // Key = document name, Value = column index in minHashMatrix
+    private HashSet<String> collectionTerms;
+    private int numTerms;   // Number of terms in Collection
     private int[][] minHashMatrix;
 
     /**
@@ -20,28 +22,51 @@ public class MinHash {
      */
     public MinHash(String folder, int numPermutations) {
         File[] files = new File(folder).listFiles();
-        HashSet terms = new HashSet<String>();
-        documentIndex = new HashMap<>();
+        collectionTerms = new HashSet<String>();
         termDocMatrix = new HashMap<>();
+        docBinaryVectors = new HashMap<>();
         permutations = new HashFunctionRan[numPermutations];
+        documentIndex = new HashMap<>();
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
             String document = files[i].getAbsolutePath();
             HashSet documentTerms = collectTerms(document);
-            terms.addAll(documentTerms);    // Does not add duplicates
+            collectionTerms.addAll(documentTerms);    // Does not add duplicates
             termDocMatrix.put(document, documentTerms);
             documentIndex.put(document, i);
         }// end for loop over all documents
 
-        numTerms = terms.size();
+        numTerms = collectionTerms.size();
 
+        String[] documents = allDocs();
+        String[] collectionTermsArr = collectionTerms.toArray(new String[0]);
+
+        // For every doc create a binary frequency vector
+        for(int docIndex = 0; docIndex < documents.length; docIndex++) {
+            String currDoc = documents[docIndex];
+            // Get the term set of the current doc
+            HashSet<String> termSet = termDocMatrix.get(currDoc);
+            BitSet binaryVector = new BitSet(numTerms);
+
+            // For every term check if it is in the document
+            for (int termIndex = 0; termIndex < collectionTermsArr.length; termIndex++) {
+                if (termSet.contains(collectionTermsArr[termIndex])) {
+                    binaryVector.set(termIndex, true);
+                }
+                else {
+                    binaryVector.set(termIndex, false);
+                }
+            }
+            docBinaryVectors.put(currDoc, binaryVector);
+        }
+
+        // Create an array of permutation functions
         for(int i = 0; i < numPermutations; i++){
             permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
 
-        String[] documents = allDocs();
-        minHashMatrix = new int[documents.length][numPermutations()];
+        minHashMatrix = new int[documents.length][numPermutations];
 
         for(int i = 0; i < documents.length; i++){
             minHashMatrix[i] = minHashSig(documents[i]);
@@ -66,7 +91,7 @@ public class MinHash {
      * @return double
      */
     public double exactJaccard(String file1, String file2) {
-        HashSet<String> terms1 = termDocMatrix.get(file1);
+        /*HashSet<String> terms1 = termDocMatrix.get(file1);
         HashSet<String> terms2 = termDocMatrix.get(file2);
 
         // intersection between file1 and file2 terms
@@ -75,8 +100,17 @@ public class MinHash {
         // union of file1 and file2 terms
         terms2.addAll(terms1);
 
-        return (double) terms1.size() / terms2.size();
+        return (double) terms1.size() / terms2.size();*/
+        BitSet binaryVector1 = (BitSet) docBinaryVectors.get(file1).clone();
+        BitSet binaryVector2 = docBinaryVectors.get(file2);
+        binaryVector1.and(binaryVector2);
+        int dotProduct = binaryVector1.cardinality();
+        double magnitude1 = Math.sqrt(termDocMatrix.get(file1).size());
+        double magnitude2 = Math.sqrt(termDocMatrix.get(file2).size());
+
+        return dotProduct / ( Math.pow(Math.abs(magnitude1), 2) + Math.pow(Math.abs(magnitude2), 2) - dotProduct );
     }// end function exactJaccard
+
 
     /**
      * Returns the MinHash the minhash signature of the document
