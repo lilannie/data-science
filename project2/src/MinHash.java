@@ -40,6 +40,7 @@ public class MinHash {
         numTerms = collectionTerms.size();
 
         String[] documents = allDocs();
+        /*
         String[] collectionTermsArr = collectionTerms.toArray(new String[0]);
 
         // For every doc create a binary frequency vector
@@ -61,6 +62,7 @@ public class MinHash {
             }
             docBinaryVectors.put(currDoc, binaryVector);
         }
+        */
 
         // Create an array of permutation functions
         for(int i = 0; i < numPermutations; i++){

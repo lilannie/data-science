@@ -78,7 +78,7 @@ public class LSH {
      * @return an array list of names of the near duplicate documents.
      */
     public ArrayList<String> nearDuplicatesOf(String docName) {
-        ArrayList<String> nearDuplicates = new ArrayList<>();
+        HashSet<String> nearDuplicates = new HashSet<>();
 
         // For each band
         for (int currBand = 0; currBand < bands; currBand++) {
@@ -101,7 +101,7 @@ public class LSH {
             nearDuplicates.addAll(table.get(hashVal));
         }
 
-        return nearDuplicates;
+        return new ArrayList<>(nearDuplicates);
     }
 
     public static void main(String args[]) {

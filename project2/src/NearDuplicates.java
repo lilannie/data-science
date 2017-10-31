@@ -51,7 +51,7 @@ public class NearDuplicates {
         NearDuplicates n = new NearDuplicates();
         //String file = base_dir + "space-0.txt";
         String file = base_dir + "baseball0.txt";
-        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,500, 0.9, file);
+        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,300, 0.9, file);
         System.out.println(nearDuplicates);
         System.out.println(nearDuplicates.size());
     }// end main test function
