@@ -6,9 +6,9 @@ import java.util.*;
 public class MinHash {
 
     private HashMap<String, HashSet<String>> termDocMatrix;
+    private HashMap<String, Integer> documentIndex;
     private HashFunctionRan[] permutations;
     private int numTerms;
-    private String[] documents;
     private int[][] minHashMatrix;
 
     /**
@@ -21,10 +21,9 @@ public class MinHash {
     public MinHash(String folder, int numPermutations) {
         File[] files = new File(folder).listFiles();
         HashSet terms = new HashSet<String>();
-
+        documentIndex = new HashMap<>();
         termDocMatrix = new HashMap<>();
         permutations = new HashFunctionRan[numPermutations];
-        documents = new String[files.length];
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
@@ -32,7 +31,7 @@ public class MinHash {
             HashSet documentTerms = collectTerms(document);
             terms.addAll(documentTerms);    // Does not add duplicates
             termDocMatrix.put(document, documentTerms);
-            documents[i] = document;
+            documentIndex.put(document, i);
         }// end for loop over all documents
 
         numTerms = terms.size();
@@ -41,6 +40,7 @@ public class MinHash {
             permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
 
+        String[] documents = allDocs();
         minHashMatrix = new int[documents.length][numPermutations()];
 
         for(int i = 0; i < documents.length; i++){
@@ -54,7 +54,8 @@ public class MinHash {
      * @return String[]
      */
     public String[] allDocs() {
-        return documents;
+        Set<String> keys = documentIndex.keySet();
+        return keys.toArray(new String[keys.size()]);
     }// end function allDocs
 
     /**
@@ -119,8 +120,8 @@ public class MinHash {
      * @return double
      */
     public double approximateJaccard(String file1, String file2) {
-        int[] signature1 = minHashMatrix[getIndex(file1)];
-        int[] signature2 = minHashMatrix[getIndex(file2)];
+        int[] signature1 = minHashMatrix[documentIndex.get(file1)];
+        int[] signature2 = minHashMatrix[documentIndex.get(file2)];
 
         int matches = 0;
         for(int i = 0; i < numPermutations(); i++){
@@ -202,20 +203,6 @@ public class MinHash {
 
         return cleaned;
     }// end function clean
-
-    /**
-     * Returns index of file in the documents array
-     * @param file String
-     * @return int
-     */
-    private int getIndex(String file){
-        for(int i = 0; i < documents.length; i++){
-            if(documents[i].equals(file)){
-                return i;
-            }// end if string equals file we're looking for
-        }// end for loop over list
-        return -1;
-    }// end function findIndex
 
     /**
      * Example run test case
