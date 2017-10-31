@@ -34,7 +34,7 @@ public class LSH {
         // For each band initialize a hashTable
         bandTables = new ArrayList<>();
         for (int i = 0; i < bands; i++) {
-            bandTables.add(new HashMap<Integer, HashSet<String>>());
+            bandTables.add(new HashMap<>());
         }
 
         // For each band initialize a hash function
@@ -51,14 +51,22 @@ public class LSH {
 
             // For each document
             for (int currDoc = 0; currDoc < numDocuments; currDoc++) {
+                int extraRows = 0;
+                // If it is the last band, add any left over bands
                 if (currBand == bands - 1 && !rowsDivideEqually) {
-                    rowsPerBand += (numHashFunctions) - (rowsPerBand * bands);
+                    extraRows = (numHashFunctions) - (rowsPerBand * bands);
                 }
 
                 // For each element in the band create a string
                 String bandString = "";
                 for (int currRow = 0; currRow < rowsPerBand; currRow++) {
                     int rowIndex = currRow + (currBand * rowsPerBand);
+                    bandString += minHashMatrix[rowIndex];
+                }
+
+                // Add any extra rows
+                for (int currRow = 0; currRow < extraRows; currRow++) {
+                    int rowIndex = currRow + (currBand * rowsPerBand) + rowsPerBand;
                     bandString += minHashMatrix[rowIndex];
                 }
 
@@ -85,15 +93,22 @@ public class LSH {
             HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
             HashFunctionRan hashFunc = hashfunctions[currBand];
 
-            // For each document
+            int extraRows = 0;
+            // If it is the last band, add any left over bands
             if (currBand == bands - 1 && !rowsDivideEqually) {
-                rowsPerBand += (numHashFunctions) - (rowsPerBand * bands);
+                extraRows += (numHashFunctions) - (rowsPerBand * bands);
             }
 
             // For each element in the band create a string
             String bandString = "";
             for (int currRow = 0; currRow < rowsPerBand; currRow++) {
                 int rowIndex = currRow + (currBand * rowsPerBand);
+                bandString += minHashMatrix[rowIndex];
+            }
+
+            // Add any extra rows
+            for (int currRow = 0; currRow < extraRows; currRow++) {
+                int rowIndex = currRow + (currBand * rowsPerBand) + rowsPerBand;
                 bandString += minHashMatrix[rowIndex];
             }
 

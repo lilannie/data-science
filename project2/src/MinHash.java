@@ -15,26 +15,28 @@ public class MinHash {
      * folder is the name of a folder containing our
      * document collection for which we wish to construct MinHash matrix. numPermutations denotes
      * the number of permutations to be used in creating the MinHash matrix.
-     * @param folder
-     * @param numPermutations
+     * @param folder String
+     * @param numPermutations int
      */
     public MinHash(String folder, int numPermutations) {
         File[] files = new File(folder).listFiles();
+        HashSet terms = new HashSet<String>();
+
         termDocMatrix = new HashMap<>();
         permutations = new HashFunctionRan[numPermutations];
-        HashSet terms = new HashSet<String>();
         documents = new String[files.length];
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
             String document = files[i].getAbsolutePath();
             HashSet documentTerms = collectTerms(document);
-            terms.addAll(documentTerms);
+            terms.addAll(documentTerms);    // Does not add duplicates
             termDocMatrix.put(document, documentTerms);
             documents[i] = document;
         }// end for loop over all documents
 
         numTerms = terms.size();
+
         for(int i = 0; i < numPermutations; i++){
             permutations[i] = new HashFunctionRan(numTerms);
         }// end for loop creating permutation functions
@@ -49,7 +51,7 @@ public class MinHash {
     /**
      * Returns an array of String consisting of all the names of
      * files in the document collection.
-     * @return
+     * @return String[]
      */
     public String[] allDocs() {
         return documents;
@@ -58,9 +60,9 @@ public class MinHash {
     /**
      * Get names of two les (in the document collection) file1 and file2 as
      * parameters and returns the exact Jaccard Similarity of the les.
-     * @param file1
-     * @param file2
-     * @return
+     * @param file1 String
+     * @param file2 String
+     * @return double
      */
     public double exactJaccard(String file1, String file2) {
         HashSet<String> terms1 = termDocMatrix.get(file1);
@@ -78,7 +80,7 @@ public class MinHash {
     /**
      * Returns the MinHash the minhash signature of the document
      * named fileName, which is an array of ints.
-     * @param fileName
+     * @param fileName String
      * @return int[]
      */
     public int[] minHashSig(String fileName) {
@@ -102,6 +104,7 @@ public class MinHash {
                     min = newVal;
                 }// end if new minimum value
             }// end for loop over all terms in the document
+
             minHashSig[i] = min;
         }// end for loop over all permutations
 
@@ -111,9 +114,9 @@ public class MinHash {
     /**
      * Returns the MinHash the minhash signature of the document
      * named fileName, which is an array of ints.
-     * @param file1
-     * @param file2
-     * @return
+     * @param file1 String
+     * @param file2 String
+     * @return double
      */
     public double approximateJaccard(String file1, String file2) {
         int[] signature1 = minHashMatrix[getIndex(file1)];
@@ -131,7 +134,7 @@ public class MinHash {
 
     /**
      * Returns the MinHash Matrix of the collection.
-     * @return
+     * @return int[][]
      */
     public int[][] minHashMatrix() {
         return minHashMatrix;
@@ -139,7 +142,7 @@ public class MinHash {
 
     /**
      * Returns the number of terms in the document collection.
-     * @return
+     * @return int
      */
     public int numTerms() {
         return numTerms;
@@ -156,7 +159,7 @@ public class MinHash {
     /**
      * Returns set of terms in a document after cleaning up the file
      * and removing stop words
-     * @return
+     * @return HashSet<String>
      */
     private HashSet<String> collectTerms(String document){
         HashSet<String> documentTerms = new HashSet<>();
@@ -186,7 +189,7 @@ public class MinHash {
 
     /**
      * Clean a string before adding it to term collection
-     * @return
+     * @return String
      */
     private String clean(String term){
         // clean a string to prepare it for comparison
@@ -200,6 +203,11 @@ public class MinHash {
         return cleaned;
     }// end function clean
 
+    /**
+     * Returns index of file in the documents array
+     * @param file String
+     * @return int
+     */
     private int getIndex(String file){
         for(int i = 0; i < documents.length; i++){
             if(documents[i].equals(file)){
@@ -209,6 +217,10 @@ public class MinHash {
         return -1;
     }// end function findIndex
 
+    /**
+     * Example run test case
+     * @param args String[]
+     */
     public static void main(String[] args)
     {
         String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
