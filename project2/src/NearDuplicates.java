@@ -37,11 +37,12 @@ public class NearDuplicates {
     public static void main(String[] args)
     {
        //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
-        String base_dir = System.getProperty("user.dir") + "/project2/space/";
+        String base_dir = System.getProperty("user.dir") + "/project2/F17PA2/";
 
         NearDuplicates n = new NearDuplicates();
-        String file = base_dir + "space-0.txt";
-        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,200, 0.5, file);
+        //String file = base_dir + "space-0.txt";
+        String file = base_dir + "baseball0.txt";
+        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,500, 0.9, file);
         System.out.println(nearDuplicates);
         System.out.println(nearDuplicates.size());
     }// end main test function

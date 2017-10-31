@@ -1,19 +1,20 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class LSH {
-    int[][] minHashMatrix;
-    int bands;
+    private int[][] minHashMatrix;
+    private int bands;
 
-    int numDocuments;
-    int numHashFunctions;
-    int rowsPerBand;
-    boolean rowsDivideEqually;
+    private int numDocuments;
+    private int numHashFunctions;
+    private int rowsPerBand;
+    private boolean rowsDivideEqually;
 
-    ArrayList<HashMap<Integer, HashSet<String>>> bandTables;
-    HashFunctionRan[] hashfunctions;
-
+    private ArrayList<HashMap<Integer, HashSet<String>>> bandTables;
+    private HashFunctionRan[] hashfunctions;
+    private HashMap<String, Integer> docIndex;
 
     /**
      *
@@ -23,8 +24,9 @@ public class LSH {
      * @param bands the number of bands to be used to perform locality sensitive hashing
      */
     public LSH(int[][] minHashMatrix, String[] docNames, int bands) {
-        this.bands = bands;
         this.minHashMatrix = minHashMatrix;
+        this.bands = bands;
+        docIndex = new HashMap<>();
 
         numDocuments = minHashMatrix.length;
         numHashFunctions = minHashMatrix[0].length;
@@ -43,35 +45,27 @@ public class LSH {
             hashfunctions[i] = new HashFunctionRan(numDocuments);
         }// end for loop creating permutation functions
 
-        System.out.println(minHashMatrix[0].length);
         // For each band
         for (int currBand = 0; currBand < bands; currBand++) {
             HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
             HashFunctionRan hashFunc = hashfunctions[currBand];
 
+            // If it is the last band, account for any extra rows
+            int extraRows = 0;
+            if (currBand == bands - 1 && !rowsDivideEqually) {
+                extraRows = (numHashFunctions) - (rowsPerBand * bands);
+            }
+
             // For each document
             for (int currDoc = 0; currDoc < numDocuments; currDoc++) {
-                int extraRows = 0;
-                // If it is the last band, add any left over bands
-                if (currBand == bands - 1 && !rowsDivideEqually) {
-                    extraRows = (numHashFunctions) - (rowsPerBand * bands);
-                }
+                // Store the document's index
+                docIndex.put(docNames[currDoc], currDoc);
 
-                // For each element in the band create a string
-                String bandString = "";
-                for (int currRow = 0; currRow < rowsPerBand; currRow++) {
-                    int rowIndex = currRow + (currBand * rowsPerBand);
-                    bandString += minHashMatrix[rowIndex];
-                }
-
-                // Add any extra rows
-                for (int currRow = 0; currRow < extraRows; currRow++) {
-                    int rowIndex = currRow + (currBand * rowsPerBand) + rowsPerBand;
-                    bandString += minHashMatrix[rowIndex];
-                }
+                int startRowIndex = currBand * rowsPerBand;
+                int endRowIndex = (currBand * rowsPerBand) + rowsPerBand + extraRows;
 
                 // Hash the string
-                int hashVal = hashFunc.hash(bandString);
+                int hashVal = hashFunc.hash(Arrays.copyOfRange(minHashMatrix[currDoc], startRowIndex, endRowIndex));
                 if (!table.containsKey(hashVal)) table.put(hashVal, new HashSet<String>());
                 table.get(hashVal).add(docNames[currDoc]);
             }
@@ -93,27 +87,18 @@ public class LSH {
             HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
             HashFunctionRan hashFunc = hashfunctions[currBand];
 
+            // If it is the last band, account for any extra rows
             int extraRows = 0;
-            // If it is the last band, add any left over bands
             if (currBand == bands - 1 && !rowsDivideEqually) {
-                extraRows += (numHashFunctions) - (rowsPerBand * bands);
+                extraRows = (numHashFunctions) - (rowsPerBand * bands);
             }
 
-            // For each element in the band create a string
-            String bandString = "";
-            for (int currRow = 0; currRow < rowsPerBand; currRow++) {
-                int rowIndex = currRow + (currBand * rowsPerBand);
-                bandString += minHashMatrix[rowIndex];
-            }
-
-            // Add any extra rows
-            for (int currRow = 0; currRow < extraRows; currRow++) {
-                int rowIndex = currRow + (currBand * rowsPerBand) + rowsPerBand;
-                bandString += minHashMatrix[rowIndex];
-            }
+            int currDocIndex = docIndex.get(docName);
+            int startRowIndex = currBand * rowsPerBand;
+            int endRowIndex = (currBand * rowsPerBand) + rowsPerBand + extraRows;
 
             // Hash the string
-            int hashVal = hashFunc.hash(bandString);
+            int hashVal = hashFunc.hash(Arrays.copyOfRange(minHashMatrix[currDocIndex], startRowIndex, endRowIndex));
             nearDuplicates.addAll(table.get(hashVal));
         }
 

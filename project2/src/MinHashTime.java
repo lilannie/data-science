@@ -49,7 +49,9 @@ public class MinHashTime {
 
     public static void main(String[] args){
         MinHashTime t = new MinHashTime();
-        String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        String base_dir = System.getProperty("user.dir") + "/project2/space/";
+
         t.timer(base_dir, 600);
     }// end main test function
 
