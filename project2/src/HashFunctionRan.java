@@ -8,6 +8,10 @@ public class HashFunctionRan
     // create a Random HashFunction for BloomFilterRan
     int a, b, p;
 
+    /**
+     *
+     * @param range
+     */
     public HashFunctionRan(int range)
     {
         this.p = getPrime(range);
@@ -15,18 +19,44 @@ public class HashFunctionRan
         this.b = ThreadLocalRandom.current().nextInt(0, p);
     }// end constructor for HashFunction
 
-    public int hash(String s)
-    {
+    /**
+     *
+     * @param arr
+     * @return
+     */
+    public int hash(int[] arr) {
+        String arrString = "";
+        for (int i = 0; i < arr.length; i++) {
+            arrString += arr[i];
+        }
+        return hash(arrString);
+    }
+
+    /**
+     *
+     * @param s
+     * @return
+     */
+    public int hash(String s) {
         return hash(s.hashCode());
     }// end function for hashing a string
 
+    /**
+     *
+     * @param x
+     * @return
+     */
     private int hash(int x)
     {
         return mod(a*x + b, p);
     }// end function for hashing an integer
 
-    private int getPrime(int n)
-    {
+    /**
+     *
+     * @param n
+     * @return
+     */
+    private int getPrime(int n) {
         // return the first positive prime of at least size n
         boolean found = false;
 
@@ -50,8 +80,12 @@ public class HashFunctionRan
         return n;
     }// end function getPrime
 
-    private boolean isPrime(int num)
-    {
+    /**
+     *
+     * @param num
+     * @return
+     */
+    private boolean isPrime(int num) {
         if ( num > 2 && num % 2 == 0 ) {
             return false;
         }// end if number > 2 and even
@@ -64,8 +98,13 @@ public class HashFunctionRan
         return true;
     }// end function isPrime
 
-    public int mod(int x, int y)
-    {
+    /**
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    public int mod(int x, int y) {
         int result = x % y;
         if (result < 0){
             result += y;
