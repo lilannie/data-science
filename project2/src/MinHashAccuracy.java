@@ -20,7 +20,7 @@ public class MinHashAccuracy {
         MinHash m = new MinHash(folder, numPermutations);
         String[] documents = m.allDocs();
         HashMap<Integer, Integer> pairs = new HashMap<>();
-
+        int pairCount = 0;
         int key;
         for(int i = 0; i < documents.length; i++){
 
@@ -36,6 +36,7 @@ public class MinHashAccuracy {
                     }// end if the difference is greater than the error parameter
 
                     pairs.put(key, 1);
+                    System.out.println(pairCount++);
                 }// end if we havent seen this pair yet
             }// end for loop over all documents
         }// end for loop over all documents
@@ -47,7 +48,9 @@ public class MinHashAccuracy {
     {
         String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         MinHashAccuracy m = new MinHashAccuracy();
-        System.out.println(m.accuracy(base_dir, 400, 0.02));
+        System.out.println(m.accuracy(base_dir, 800, 0.04));
+        System.out.println(m.accuracy(base_dir, 800, 0.07));
+        System.out.println(m.accuracy(base_dir, 800, 0.09));
     }// end main test function
 
 }// end class MinHashAccuracy

@@ -43,7 +43,7 @@ public class LSH {
             hashfunctions[i] = new HashFunctionRan(numDocuments);
         }// end for loop creating permutation functions
 
-
+        System.out.println(minHashMatrix[0].length);
         // For each band
         for (int currBand = 0; currBand < bands; currBand++) {
             HashMap<Integer, HashSet<String>> table = bandTables.get(currBand);
@@ -68,6 +68,7 @@ public class LSH {
                 table.get(hashVal).add(docNames[currDoc]);
             }
         }
+
     }
 
     /**
