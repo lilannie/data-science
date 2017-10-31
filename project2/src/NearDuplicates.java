@@ -34,21 +34,27 @@ public class NearDuplicates {
         return l.nearDuplicatesOf(docName);
     }// end function nearDuplicateDetector
 
-    public static void main(String[] args)
-    {
-       //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+    /**
+     * Helper function - returns true if the difference between a and b is within the difference threshold
+     * @param a double
+     * @param b double
+     * @return boolean
+     */
+    private boolean isClose(double a, double b) {
+        return Math.abs(a-b) <= DIFFERENCE_THRESHOLD;
+    }// end function isClose()
+
+    public static void main(String[] args) {
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         String base_dir = System.getProperty("user.dir") + "/project2/F17PA2/";
 
         NearDuplicates n = new NearDuplicates();
-        //String file = base_dir + "space-0.txt";
-        String file = base_dir + "baseball1.txt";
-        ArrayList<String> nearDuplicates = n.nearDuplicateDetector(base_dir,500, 0.9, file);
+        ArrayList<String> nearDuplicates;
+        String base = "C:\\Users\\joeku\\Documents\\Code\\data-science\\project2\\F17PA2\\";
+        nearDuplicates = n.nearDuplicateDetector(base_dir,300, 0.95, base + "hockey261.txt");
+
         System.out.println(nearDuplicates);
         System.out.println(nearDuplicates.size());
     }// end main test function
-
-    private boolean isClose(double a, double b){
-        return Math.abs(a-b) <= DIFFERENCE_THRESHOLD;
-    }// end function isClose()
 
 }// end class NearDuplicates

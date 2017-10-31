@@ -6,10 +6,10 @@ import java.util.*;
 public class MinHash {
 
     private HashMap<String, HashSet<String>> termDocMatrix; // Key = document name, Value = set of terms in document
-    private HashMap<String, BitSet> docBinaryVectors;
-    private HashFunctionRan[] permutations;
+    private HashMap<String, BitSet> docBinaryVectors;   // Key = document name, Value = binary frequency vector
+    private HashFunctionRan[] permutations;     // Array of random hash functions
     private HashMap<String, Integer> documentIndex; // Key = document name, Value = column index in minHashMatrix
-    private HashSet<String> collectionTerms;
+    private HashSet<String> collectionTerms;    // All the terms in the Collection
     private int numTerms;   // Number of terms in Collection
     private int[][] minHashMatrix;
 
@@ -22,11 +22,11 @@ public class MinHash {
      */
     public MinHash(String folder, int numPermutations) {
         File[] files = new File(folder).listFiles();
-        collectionTerms = new HashSet<String>();
         termDocMatrix = new HashMap<>();
         docBinaryVectors = new HashMap<>();
         permutations = new HashFunctionRan[numPermutations];
         documentIndex = new HashMap<>();
+        collectionTerms = new HashSet<>();
 
         for(int i = 0; i < files.length; i++) {
             // collect all terms and place them in a term-document Hashmap
@@ -40,12 +40,14 @@ public class MinHash {
         numTerms = collectionTerms.size();
 
         String[] documents = allDocs();
+        /*
         String[] collectionTermsArr = collectionTerms.toArray(new String[0]);
 
         // For every doc create a binary frequency vector
         for(int docIndex = 0; docIndex < documents.length; docIndex++) {
             String currDoc = documents[docIndex];
-            // Get the term set of the current doc
+
+            // Get the set of terms contained in the current doc
             HashSet<String> termSet = termDocMatrix.get(currDoc);
             BitSet binaryVector = new BitSet(numTerms);
 
@@ -60,6 +62,7 @@ public class MinHash {
             }
             docBinaryVectors.put(currDoc, binaryVector);
         }
+        */
 
         // Create an array of permutation functions
         for(int i = 0; i < numPermutations; i++){
@@ -233,8 +236,9 @@ public class MinHash {
      */
     public static void main(String[] args)
     {
-        String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
-        MinHash m = new MinHash(base_dir, 500);
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\F17PA2\\";
+        String base_dir = System.getProperty("user.dir") + "/project2/F17PA2/";
+        MinHash m = new MinHash(base_dir, 400);
         String file1 = base_dir + "baseball0.txt";
         String file2 = base_dir + "baseball0.txt.copy1";
         System.out.println("Exact Jaccard: " + m.exactJaccard(file1, file2));
