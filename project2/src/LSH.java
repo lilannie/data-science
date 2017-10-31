@@ -70,7 +70,6 @@ public class LSH {
                 table.get(hashVal).add(docNames[currDoc]);
             }
         }
-
     }
 
     /**

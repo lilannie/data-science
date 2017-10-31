@@ -34,9 +34,18 @@ public class NearDuplicates {
         return l.nearDuplicatesOf(docName);
     }// end function nearDuplicateDetector
 
-    public static void main(String[] args)
-    {
-       //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+    /**
+     * Helper function - returns true if the difference between a and b is within the difference threshold
+     * @param a double
+     * @param b double
+     * @return boolean
+     */
+    private boolean isClose(double a, double b) {
+        return Math.abs(a-b) <= DIFFERENCE_THRESHOLD;
+    }// end function isClose()
+
+    public static void main(String[] args) {
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         String base_dir = System.getProperty("user.dir") + "/project2/F17PA2/";
 
         NearDuplicates n = new NearDuplicates();
@@ -47,8 +56,5 @@ public class NearDuplicates {
         System.out.println(nearDuplicates.size());
     }// end main test function
 
-    private boolean isClose(double a, double b){
-        return Math.abs(a-b) <= DIFFERENCE_THRESHOLD;
-    }// end function isClose()
 
 }// end class NearDuplicates

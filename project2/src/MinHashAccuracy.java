@@ -10,11 +10,11 @@ public class MinHashAccuracy {
      *
      * Reports the number of pairs for which exact and approximate similarities
      * differ by more then errorParam
-     * @param folder
-     * @param errorParam
-     * @return
+     * @param folder String
+     * @param numPermutations int
+     * @param errorParam double
+     * @return int
      */
-
     public int accuracy(String folder, int numPermutations, double errorParam) {
         int numError = 0;
         MinHash m = new MinHash(folder, numPermutations);
@@ -44,7 +44,7 @@ public class MinHashAccuracy {
         //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         String base_dir = System.getProperty("user.dir") + "/project2/space/";
         MinHashAccuracy m = new MinHashAccuracy();
-        System.out.println("Errors: " + m.accuracy(base_dir, 400, 0.04));
+        System.out.println("Errors: " + m.accuracy(base_dir, 600, 0.04));
        // System.out.println(m.accuracy(base_dir, 800, 0.07));
        // System.out.println(m.accuracy(base_dir, 800, 0.09));
     }// end main test function

@@ -15,7 +15,7 @@ public class MinHashTime {
      *
      * @param folder
      * @param numPermutations
-     * @return
+     * @return void
      */
     public void timer(String folder, int numPermutations)
     {
