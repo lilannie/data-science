@@ -41,7 +41,8 @@ public class MinHashAccuracy {
 
     public static void main(String[] args)
     {
-        String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
+        String base_dir = System.getProperty("user.dir") + "/project2/space/";
         MinHashAccuracy m = new MinHashAccuracy();
         System.out.println("Errors: " + m.accuracy(base_dir, 400, 0.04));
        // System.out.println(m.accuracy(base_dir, 800, 0.07));
