@@ -91,16 +91,6 @@ public class MinHash {
      * @return double
      */
     public double exactJaccard(String file1, String file2) {
-        /*HashSet<String> terms1 = termDocMatrix.get(file1);
-        HashSet<String> terms2 = termDocMatrix.get(file2);
-
-        // intersection between file1 and file2 terms
-        terms1.retainAll(terms2);
-
-        // union of file1 and file2 terms
-        terms2.addAll(terms1);
-
-        return (double) terms1.size() / terms2.size();*/
         BitSet binaryVector1 = (BitSet) docBinaryVectors.get(file1).clone();
         BitSet binaryVector2 = docBinaryVectors.get(file2);
         binaryVector1.and(binaryVector2);
@@ -110,7 +100,6 @@ public class MinHash {
 
         return dotProduct / ( Math.pow(Math.abs(magnitude1), 2) + Math.pow(Math.abs(magnitude2), 2) - dotProduct );
     }// end function exactJaccard
-
 
     /**
      * Returns the MinHash the minhash signature of the document
