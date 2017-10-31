@@ -57,5 +57,4 @@ public class NearDuplicates {
         System.out.println(nearDuplicates.size());
     }// end main test function
 
-
 }// end class NearDuplicates

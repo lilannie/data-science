@@ -9,8 +9,7 @@ public class HashFunctionRan
     int a, b, p;
 
     /**
-     *
-     * @param range
+     * @param range Create a hash function with a prime p of at least size range
      */
     public HashFunctionRan(int range)
     {
@@ -21,8 +20,8 @@ public class HashFunctionRan
 
     /**
      *
-     * @param arr
-     * @return
+     * @param arr integer array
+     * @return int hash value
      */
     public int hash(int[] arr) {
         String arrString = "";
@@ -34,8 +33,8 @@ public class HashFunctionRan
 
     /**
      *
-     * @param s
-     * @return
+     * @param String s
+     * @return hash value of string s
      */
     public int hash(String s) {
         return hash(s.hashCode());
@@ -43,18 +42,18 @@ public class HashFunctionRan
 
     /**
      *
-     * @param x
-     * @return
+     * @param int x
+     * @return hash value of int x
      */
     private int hash(int x)
     {
-        return mod(a*x + b, p);
+        return (a*x + b) % p;
     }// end function for hashing an integer
 
     /**
      *
-     * @param n
-     * @return
+     * @param int n
+     * @return prime number of at least n
      */
     private int getPrime(int n) {
         // return the first positive prime of at least size n
@@ -83,7 +82,7 @@ public class HashFunctionRan
     /**
      *
      * @param num
-     * @return
+     * @return true of num is prime, false otherwise
      */
     private boolean isPrime(int num) {
         if ( num > 2 && num % 2 == 0 ) {
@@ -97,19 +96,5 @@ public class HashFunctionRan
         }// end for loop checking if prime
         return true;
     }// end function isPrime
-
-    /**
-     *
-     * @param x
-     * @param y
-     * @return
-     */
-    public int mod(int x, int y) {
-        int result = x % y;
-        if (result < 0){
-            result += y;
-        }// end if result is negative
-        return result;
-    }// end function mod
 
 }// end class HashFunctionRan

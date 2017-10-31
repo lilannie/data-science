@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-
 public class MinHashAccuracy {
     /**
      * This method will create an instance of MinHash.
@@ -20,7 +17,6 @@ public class MinHashAccuracy {
         MinHash m = new MinHash(folder, numPermutations);
         String[] documents = m.allDocs();
 
-        int pairCount = 0;
         for(int i = 0; i < documents.length; i++){
 
             for(int j = i+1; j < documents.length; j++){
@@ -31,7 +27,6 @@ public class MinHashAccuracy {
                     numError++;
                 }// end if the difference is greater than the error parameter
 
-                System.out.println(pairCount++);
             }// end inner for loop
 
         }// end for loop over all documents
@@ -44,7 +39,8 @@ public class MinHashAccuracy {
         //String base_dir = System.getProperty("user.dir") + "\\project2\\space\\";
         String base_dir = System.getProperty("user.dir") + "/project2/space/";
         MinHashAccuracy m = new MinHashAccuracy();
-        System.out.println("Errors: " + m.accuracy(base_dir, 600, 0.04));
+        System.out.println("Errors: " + m.accuracy(base_dir, 800, 0.04));
+
        // System.out.println(m.accuracy(base_dir, 800, 0.07));
        // System.out.println(m.accuracy(base_dir, 800, 0.09));
     }// end main test function

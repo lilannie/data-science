@@ -102,7 +102,6 @@ public class MinHash {
         return dotProduct / ( Math.pow(Math.abs(magnitude1), 2) + Math.pow(Math.abs(magnitude2), 2) - dotProduct );
     }// end function exactJaccard
 
-
     /**
      * Returns the MinHash the minhash signature of the document
      * named fileName, which is an array of ints.
