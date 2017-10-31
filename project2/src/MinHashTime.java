@@ -31,8 +31,7 @@ public class MinHashTime {
         start = System.currentTimeMillis();
         int key;
         for(int i = 0; i < documents.length; i++) {
-
-            for (int j = 0; j < documents.length; j++) {
+            for (int j = i + 1; j < documents.length; j++) {
                 key = documents[i].hashCode() + documents[j].hashCode();
 
                 if (!pairs.containsKey(key) && !documents[i].equals(documents[j])) {
