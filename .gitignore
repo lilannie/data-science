@@ -31,3 +31,8 @@ hs_err_pid*
 articles/
 space/
 F17PA2/
+
+# Eclipse files
+.classpath
+.project
+.settings
