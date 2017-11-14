@@ -1,46 +1,57 @@
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
-public class WeightedQueue<T>
+@SuppressWarnings({"unchecked", "serial"})
+public class WeightedQueue<T> extends PriorityQueue<T>
 {
-    int maxWeight = 0;      // max weight of all items in the queue
-    Queue<T> queue;
+    HashMap<T, Integer> elementLookup;
 
     public WeightedQueue(){
-        // traverse the web graph starting at seed_url
-        queue = new PriorityQueue<>();
+    	super();
+        elementLookup = new HashMap<>();
     }// end constructor WeightedQueue
-
-    public void add(Tuple t){
-        if(t.weight > maxWeight)
+    
+    @Override
+	public boolean add(T item){
+    	Tuple<T> t = (Tuple<T>) item;
+		
+    	if(!elementLookup.containsKey(t.item)) {
+			super.add((T) t);
+			elementLookup.put(t.item, 1);
+			return true;
+		}// end if this item is not in the queue
+		
+		return false;
     }// end function add
 
-    public T extract(){
-
+	public Tuple<T> extract(){
+    	Tuple<T> t = (Tuple<T>) super.poll();
+    	elementLookup.remove(t.item);
+    	return t;
     }// end function extract
-
-    class Tuple {
-        T item;
-        int weight;
-
-        public Tuple(T item, int weight) {
-            this.item = item;
-            this.weight = weight;
-        }// end constructor for Tuple
-
-        @Override
-        public boolean equals(Object o){
-            Tuple t = (Tuple) o;
-            return this.item.equals(t.item) && this.weight == t.weight;
-        }// end function equals()
-
-        @Override
-        public String toString(){
-            return "(" + item + "," + weight + ")";
-        }// end function toString()
-
-    }// end class Tuple
+    
+    public static void main(String[] args) {
+    	WeightedQueue<Tuple<Integer>> q = new WeightedQueue<Tuple<Integer>>();
+    	
+    	// add items to the weighted queue
+    	q.add(new Tuple<Integer>(1, 5));
+    	q.add(new Tuple<Integer>(2, 3));
+    	q.add(new Tuple<Integer>(5, 7));
+    	q.add(new Tuple<Integer>(21, 5));
+    	q.add(new Tuple<Integer>(36, 4));
+    	
+    	// extract items from weighted queue and print results
+    	System.out.println(q.extract());
+    	System.out.println(q.extract());
+    	
+    	// test adding a duplicate item
+    	q.add(new Tuple<Integer>(21, 9));
+    	
+    	// extract items from weighted queue and print results
+    	System.out.println(q.extract());
+    	System.out.println(q.extract());
+    	System.out.println(q.extract());
+    }// end main test class
 
 }// end class WeightedQueue
 

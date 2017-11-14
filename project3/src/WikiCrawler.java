@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -8,8 +7,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,14 +15,24 @@ public class WikiCrawler {
 	/* crawl Wikipedia pages creating a directed graph with edges stored in WikiCS.txt */
 	
 	private static final String BASE_URL = "https://en.wikipedia.org";		// main URL to crawl
+	private static final int MAX_WORD_DISTANCE = 20;						// max distance a link should be away from a topic keyword
 	private String seedUrl;	 												// original URL to begin crawling
 	private int max;  		 												// max number of pages to be crawled
 	private String fileName; 												// file name for which graph to be written too
+	private ArrayList<String> keywords;										// topic keywords for topic-sensitive crawling
+	private boolean isWeighted;												// whether or not our graph is weighted
 	
-	public WikiCrawler(String seedUrl, int max, String fileName){
+	public WikiCrawler(String seedUrl, String[] keywords, int max, String fileName, boolean isWeighted){
 		this.seedUrl = seedUrl;
+		this.keywords = new ArrayList<String>();
+		
+		for(String keyword : keywords) {
+			this.keywords.add(keyword.toLowerCase());
+		}// end for loop adding keywords as lowercase
+		
 		this.max = max;
 		this.fileName = fileName;
+		this.isWeighted = isWeighted;
 	}// end WikiCrawler constructor
 	
 	public void crawl() throws MalformedURLException, IOException, InterruptedException {
@@ -94,7 +102,7 @@ public class WikiCrawler {
 	
 	private ArrayList<Edge> BFSTraversal(String seed_url) throws InterruptedException, IOException {
 		// traverse the web graph starting at seed_url
-		Queue<String> queue = new LinkedList<String>();
+		WeightedQueue<Tuple<String>> queue = new WeightedQueue<Tuple<String>>();
 		
 		// some lists we need here
 		ArrayList<String> visited = new ArrayList<String>();
@@ -106,8 +114,17 @@ public class WikiCrawler {
 		BufferedReader rd = null;
 		StringBuffer response = null;
 		
+		try {
+			// open GET request to our URL			    
+		    is = new URL(BASE_URL + seed_url).openStream();
+		    rd = new BufferedReader(new InputStreamReader(is));
+		    response = new StringBuffer();
+		} catch (Exception e) {
+	      e.printStackTrace();
+		}// end try-catch block
+		
 		// begin by adding our seedUrl to the queue and visited
-		queue.add(seed_url);
+		queue.add(new Tuple<String>(seed_url, weight(seed_url, response.toString())));
 		visited.add(seed_url);
 		
 		// keep us under max requests by counting the number of requests
@@ -115,7 +132,7 @@ public class WikiCrawler {
 		
 		while(!queue.isEmpty()){
 			// while loop over all links in the queue
-			String currentPage = queue.poll();
+			String currentPage = queue.poll().item;
 			// boolean for determining if we parse links, set true after first <p> tag
 			boolean linkParse = false;
 			
@@ -127,7 +144,8 @@ public class WikiCrawler {
 			    // increment our request counter
 			    counter++;
 			} catch (Exception e) {
-		      e.printStackTrace();
+				e.printStackTrace();
+				continue;
 			}// end try-catch block
 					
 			if(counter % 100 == 0){
@@ -148,7 +166,7 @@ public class WikiCrawler {
 		    		response.append('\r');
 		    	}// end if we are parsing links
 		     
-		    }// end while
+		    }// end while we are reading the line creating our response
 		    
 		    // extract our links from our currentPage Response
 		    extractedLinks = extractLinks(response.toString());
@@ -158,7 +176,7 @@ public class WikiCrawler {
 		    	String link = extractedLinks.get(i);
 		    	
 		    	if(!visited.contains(link) && visited.size() < max) {
-		    		queue.add(link);
+		    		queue.add(new Tuple<String>(link, weight(link, response.toString())));
 		    		visited.add(link);
 	    		}// end if we should visit this link
 		    	
@@ -179,7 +197,86 @@ public class WikiCrawler {
 		
 		return edges;
 	}// end function BFSTraversal()
-
-
-
+	
+	private double weight(String link, String response) {
+		if(!isWeighted) {
+			return 0;
+		}// end if not weighted
+		
+		int minDistance = Integer.MAX_VALUE;
+		ArrayList<String> responseWords = new ArrayList<String>(Arrays.asList(response.split(" ")));
+		int link_index = responseWords.indexOf(link);
+		
+		while(link_index > 0) {
+			// grab the first occurence of the link in the response
+			link_index = responseWords.indexOf(link);
+			int distance = 1;
+			boolean reverse = false;
+			int index = link_index;
+			
+			while(index > 0 && index < responseWords.size() && distance <= MAX_WORD_DISTANCE)
+			{
+				String word = responseWords.get(index).toLowerCase();
+				
+				if(keywords.contains(word) && distance < minDistance){
+					minDistance = distance;
+					distance = MAX_WORD_DISTANCE;
+				}// end if the current word contains the keyword
+				
+				if(distance == MAX_WORD_DISTANCE && !reverse) {
+					index = link_index;
+					reverse = true;
+					distance = 0;
+				}// end if distance == 20 and we haven't went in the reverse direction
+				
+				if(reverse){
+					index--;
+				}else{
+					index++;
+				}// end if searching for distance in reverse
+				
+				distance++;
+			}// end while distance is less than or equal to MAX_WORD_DISTANCE
+			
+			// remove this link from our list of response words
+			responseWords.remove(link_index);
+		}// end while loop over each duplicate link in the response
+		
+		if(minDistance > MAX_WORD_DISTANCE) {
+			return 0;
+		}else {
+			return 1/(minDistance + 2);
+		}// end if distance > 20
+		
+	}// end function weight
+	
+	class Edge {
+		// create an Edge of a directed graph (<start>, <end>) pair
+		String start;
+		String end;
+		
+		public Edge(String start, String end){
+			this.start = start;
+			this.end = end;
+		}// end Edge constructor
+			
+		@Override
+		public String toString(){
+			return start + " " + end;
+		}// end function toString()
+		
+		@Override
+		public boolean equals(Object o){
+			Edge e = (Edge) o;
+			return this.start == e.start && this.end == e.end;
+		}// end function equals()
+		
+	}// end class Edge
+	
+	public static void main(String[] args) throws InterruptedException, MalformedURLException, IOException {
+		String[] topics = {"tennis", "grand slam"};
+		WikiCrawler w = new WikiCrawler("/wiki/tennis", topics, 1000, "WikiTennisGraph.txt", true);
+		w.crawl();
+	}// end main function
+	
 }// end class WikiCrawler
