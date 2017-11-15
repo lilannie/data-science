@@ -28,9 +28,9 @@ public class Tuple<T> implements Comparable<Tuple<T>>
 	
 	@Override
 	public int compareTo(Tuple<T> t) {
-		if(t.weight == this.weight) {
+		if (t.weight == this.weight) {
 			return (int) (this.timestamp - t.timestamp);
-		}else {
+		} else {
 			return (int) (t.weight - this.weight);
 		}// end if these two tuples have equal weights
 	}// end function compareTo
