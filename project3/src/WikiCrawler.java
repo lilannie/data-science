@@ -69,7 +69,7 @@ public class WikiCrawler {
 	    ArrayList<Edge> edges = BFSTraversal(seedUrl);
 		String fileContents = "";
 		
-		for(int i = 0; i < edges.size(); i++){
+		for (int i = 0; i < edges.size(); i++){
 			fileContents = fileContents + edges.get(i).toString() + "\r";
 		}// end for loop over all edges
 	    
@@ -106,7 +106,7 @@ public class WikiCrawler {
 		ArrayList<String> links = new ArrayList<String>();	
 		String[] lines = doc.split("\r");
 		
-		for(int i = 0; i < lines.length; i++){
+		for (int i = 0; i < lines.length; i++){
 			// for loop over all our lines
 			String regex = "href=\"/wiki/.*?\"";
 			Pattern string = Pattern.compile(regex);
@@ -199,7 +199,7 @@ public class WikiCrawler {
 		    // extract our links from our currentPage Response
 		    extractedLinks = extractLinks(response.toString());
 		    
-		    for(int i = 0; i < extractedLinks.size(); i++){
+		    for (int i = 0; i < extractedLinks.size(); i++){
 		    	// for loop over all our extracted links
 		    	String link = extractedLinks.get(i);
 		    	
@@ -277,29 +277,6 @@ public class WikiCrawler {
 		}// end if distance > 20
 		
 	}// end function weight
-	
-	class Edge {
-		// create an Edge of a directed graph (<start>, <end>) pair
-		String start;
-		String end;
-		
-		public Edge(String start, String end){
-			this.start = start;
-			this.end = end;
-		}// end Edge constructor
-			
-		@Override
-		public String toString(){
-			return start + " " + end;
-		}// end function toString()
-		
-		@Override
-		public boolean equals(Object o){
-			Edge e = (Edge) o;
-			return this.start == e.start && this.end == e.end;
-		}// end function equals()
-		
-	}// end class Edge
 	
 	public static void main(String[] args) throws InterruptedException, MalformedURLException, IOException {
 		String[] topics = {"tennis", "grand slam"};

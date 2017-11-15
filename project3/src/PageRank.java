@@ -1,8 +1,13 @@
+import java.util.HashMap;
+
 public class PageRank {
     String fileName = "";
     double approximation = 0.0;
     int numEdges = 0;
 
+    HashMap<String, Integer> vertexIndices = new HashMap<>();
+    HashMap<String, Integer> outDegree = new HashMap<>();
+    HashMap<String, Integer> inDegree = new HashMap<>();
     /**
      *
      * @param fileName Name of a file that contains the edges of the graph. You may assume that the first line of
