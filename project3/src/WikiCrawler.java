@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +25,7 @@ public class WikiCrawler {
 	private String fileName; 												// file name for which graph to be written too
 	private ArrayList<String> keywords;										// topic keywords for topic-sensitive crawling
 	private boolean isWeighted;												// whether or not our graph is weighted
+	private Set<String> robots;
 	
 	public WikiCrawler(String seedUrl, String[] keywords, int max, String fileName, boolean isWeighted){
 		this.seedUrl = seedUrl;
@@ -33,6 +38,29 @@ public class WikiCrawler {
 		this.max = max;
 		this.fileName = fileName;
 		this.isWeighted = isWeighted;
+		this.robots = new HashSet<>();
+		
+		BufferedReader br = null;
+		FileReader fr = null;
+		try {
+			fr = new FileReader("robots.txt");
+			br = new BufferedReader(fr);
+			String line;
+
+			while ((line = br.readLine()) != null) {
+				Scanner s = new Scanner(line);
+			
+				if(s.hasNext() && s.next().equals("Disallow:") && s.hasNext()) {
+					robots.add(s.next());
+				}// end if this is a link we dont want to crawl
+				
+				s.close();
+			}// end while over each line in robots.txt
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}// end try catch block reading robots.txt
+		
 	}// end WikiCrawler constructor
 	
 	public void crawl() throws MalformedURLException, IOException, InterruptedException {
@@ -123,19 +151,19 @@ public class WikiCrawler {
 	      e.printStackTrace();
 		}// end try-catch block
 		
-		// begin by adding our seedUrl to the queue and visited
-		queue.add(new Tuple<String>(seed_url, weight(seed_url, response.toString())));
-		visited.add(seed_url);
-		
 		// keep us under max requests by counting the number of requests
 		int counter = 1;
 		
+		// begin by adding our seedUrl to the queue and visited
+		queue.add(new Tuple<String>(seed_url, weight(seed_url, response.toString()), counter));
+		visited.add(seed_url);
+		
 		while(!queue.isEmpty()){
 			// while loop over all links in the queue
-			String currentPage = queue.poll().item;
+			String currentPage = queue.extract().item;
+			
 			// boolean for determining if we parse links, set true after first <p> tag
 			boolean linkParse = false;
-			
 			try {
 				// open GET request to our URL			    
 			    is = new URL(BASE_URL + currentPage).openStream();
@@ -148,8 +176,8 @@ public class WikiCrawler {
 				continue;
 			}// end try-catch block
 					
-			if(counter % 100 == 0){
-				Thread.sleep(3000);
+			if(counter % 10 == 0){
+				Thread.sleep(1000);
 			}// end if we need to sleep
 			
 		    // append our entire response to a single String
@@ -175,24 +203,24 @@ public class WikiCrawler {
 		    	// for loop over all our extracted links
 		    	String link = extractedLinks.get(i);
 		    	
-		    	if(!visited.contains(link) && visited.size() < max) {
-		    		queue.add(new Tuple<String>(link, weight(link, response.toString())));
+		    	if(!visited.contains(link) && visited.size() < max && !robots.contains(link)) {
+		    		queue.add(new Tuple<String>(link, weight(link, response.toString()), counter));
 		    		visited.add(link);
+		    		
+		    		// add the edge to our wiki graph
+		    		Edge e = new Edge(currentPage, link);
+		    		if(!currentPage.equals(link) && !edges.contains(e)) {
+		    			edges.add(e);
+		    		}// end if we should add this edge to our graph
+		    		
 	    		}// end if we should visit this link
 		    	
-		    	Edge e = new Edge(currentPage, link);
-		    	
-		    	if(visited.contains(link) && !currentPage.equals(link) && !edges.contains(e)){
-	    			edges.add(e);
-	    		}// end if we dont have a self-loop
-		    		
-		    }// end for loop over all our extracted links
+		    }// end for loop over all our extracted links		    		
 
 		   if(rd != null)
 			   rd.close();
 		   if(is != null)
 			   is.close();
-		   
 		}// end while loop over all items in the queue
 		
 		return edges;

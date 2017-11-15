@@ -5,14 +5,14 @@ public class Tuple<T> implements Comparable<Tuple<T>>
 	double weight;
 	long timestamp;
 	
-	public Tuple(T item, double weight) {
+	public Tuple(T item, double weight, int timestamp) {
 	    this.item = item;
 	    this.weight = weight;
-	    this.timestamp = System.nanoTime();
+	    this.timestamp = timestamp;
 	}// end constructor for Tuple
 	
 	public Tuple(T item) {
-		this(item, 0);
+		this(item, 0, 0);
 	}// end constructor for Tuple
 	
 	@Override
