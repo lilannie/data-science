@@ -24,28 +24,29 @@ public class WeightedQueue<T> extends PriorityQueue<T>
 		return false;
     }// end function add
 
-	public Tuple<T> extract(){
+	public T extract(){
     	Tuple<T> t = (Tuple<T>) super.poll();
     	elementLookup.remove(t.item);
-    	return t;
+    	return (T) t;
     }// end function extract
     
     public static void main(String[] args) {
     	WeightedQueue<Tuple<Integer>> q = new WeightedQueue<Tuple<Integer>>();
     	
     	// add items to the weighted queue
-    	q.add(new Tuple<Integer>(1, 5));
-    	q.add(new Tuple<Integer>(2, 3));
-    	q.add(new Tuple<Integer>(5, 7));
-    	q.add(new Tuple<Integer>(21, 5));
-    	q.add(new Tuple<Integer>(36, 4));
+    	int counter = 0;
+    	q.add(new Tuple<Integer>(1, 5, counter++));
+    	q.add(new Tuple<Integer>(2, 3, counter++));
+    	q.add(new Tuple<Integer>(5, 7, counter++));
+    	q.add(new Tuple<Integer>(21, 5, counter++));
+    	q.add(new Tuple<Integer>(36, 4, counter++));
     	
     	// extract items from weighted queue and print results
     	System.out.println(q.extract());
     	System.out.println(q.extract());
     	
     	// test adding a duplicate item
-    	q.add(new Tuple<Integer>(21, 9));
+    	q.add(new Tuple<Integer>(21, 9, counter++));
     	
     	// extract items from weighted queue and print results
     	System.out.println(q.extract());
