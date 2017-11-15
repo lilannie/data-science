@@ -133,7 +133,7 @@ public class WikiCrawler {
 		WeightedQueue<Tuple<String>> queue = new WeightedQueue<Tuple<String>>();
 		
 		// some lists we need here
-		ArrayList<String> visited = new ArrayList<String>();
+		HashSet<String> visited = new HashSet<String>();
 		ArrayList<String> extractedLinks = new ArrayList<String>();
 		ArrayList<Edge> edges = new ArrayList<Edge>();
 		
@@ -152,10 +152,11 @@ public class WikiCrawler {
 		}// end try-catch block
 		
 		// keep us under max requests by counting the number of requests
-		int counter = 1;
+		int requestCounter = 1;
+		int linkCounter = 1;
 		
 		// begin by adding our seedUrl to the queue and visited
-		queue.add(new Tuple<String>(seed_url, weight(seed_url, response.toString()), counter));
+		queue.add(new Tuple<String>(seed_url, weight(seed_url, response.toString()), linkCounter));
 		visited.add(seed_url);
 		
 		while(!queue.isEmpty()){
@@ -170,13 +171,13 @@ public class WikiCrawler {
 			    rd = new BufferedReader(new InputStreamReader(is));
 			    response = new StringBuffer();
 			    // increment our request counter
-			    counter++;
+			    requestCounter++;
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
 			}// end try-catch block
 					
-			if(counter % 10 == 0){
+			if(requestCounter % 10 == 0){
 				Thread.sleep(1000);
 			}// end if we need to sleep
 			
@@ -204,16 +205,15 @@ public class WikiCrawler {
 		    	String link = extractedLinks.get(i);
 		    	
 		    	if(!visited.contains(link) && visited.size() < max && !robots.contains(link)) {
-		    		queue.add(new Tuple<String>(link, weight(link, response.toString()), counter));
+		    		queue.add(new Tuple<String>(link, weight(link, response.toString()), ++linkCounter));
 		    		visited.add(link);
-		    		
-		    		// add the edge to our wiki graph
-		    		Edge e = new Edge(currentPage, link);
-		    		if(!currentPage.equals(link) && !edges.contains(e)) {
-		    			edges.add(e);
-		    		}// end if we should add this edge to our graph
-		    		
 	    		}// end if we should visit this link
+		    	
+		    	// add the edge to our wiki graph
+	    		Edge e = new Edge(currentPage, link);
+	    		if(visited.contains(link) && !currentPage.equals(link) && !edges.contains(e)) {
+	    			edges.add(e);
+	    		}// end if we should add this edge to our graph
 		    	
 		    }// end for loop over all our extracted links		    		
 
@@ -242,8 +242,16 @@ public class WikiCrawler {
 			boolean reverse = false;
 			int index = link_index;
 			
-			while(index > 0 && index < responseWords.size() && distance <= MAX_WORD_DISTANCE)
+			while(distance <= MAX_WORD_DISTANCE)
 			{
+				if(index > responseWords.size()) {
+					index = link_index;
+					reverse = true;
+					distance = 0;
+				}else if(index < 0) {
+					break;
+				}// end if checking where we are in the body of the response
+				 
 				String word = responseWords.get(index).toLowerCase();
 				
 				if(keywords.contains(word) && distance < minDistance){
