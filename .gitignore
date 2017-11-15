@@ -36,3 +36,7 @@ F17PA2/
 .classpath
 .project
 .settings
+
+# Output files
+*.txt
+
