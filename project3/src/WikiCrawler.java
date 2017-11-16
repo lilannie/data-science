@@ -189,7 +189,7 @@ public class WikiCrawler {
 			return 0;
 		}// end if not weighted
 		
-		int minDistance = Integer.MAX_VALUE;
+		int minDistance = MAX_WORD_DISTANCE + 1;
 		ArrayList<String> responseWords = new ArrayList<>(Arrays.asList(response.split(" ")));
 		int link_index = responseWords.indexOf(link);
 		
@@ -199,30 +199,30 @@ public class WikiCrawler {
 			int distance = 1;
 			boolean reverse = false;
 			int index = link_index;
-			
-			while(distance <= MAX_WORD_DISTANCE) {
+
+			l: while(distance <= MAX_WORD_DISTANCE) {
 				// loop until our link is too far away from a keyword
-				if(index > responseWords.size()) {
-					index = link_index;
-					reverse = true;
-					distance = 0;
-				}else if(index < 0) {
-					break;
-				}// end if checking where we are in the body of the response
-				 
+				if(distance >= minDistance || index > responseWords.size() || index < 0) {
+					if(reverse){
+						break;
+					}else{
+						index = link_index;
+						reverse = true;
+						distance = 1;
+					}// end if we are searching backwards
+				}// end if distance >= minDistance
+
+				// get the next word close to the link
 				String word = responseWords.get(index).toLowerCase();
-				
-				if(keywords.contains(word) && distance <= minDistance){
-					minDistance = distance;
-					distance = MAX_WORD_DISTANCE;
-				}// end if the current word contains the keyword
-				
-				if(distance == MAX_WORD_DISTANCE && !reverse) {
-					index = link_index;
-					reverse = true;
-					distance = 0;
-				}// end if distance == 20 and we haven't went in the reverse direction
-				
+
+				for(String keyword : keywords){
+					if(word.contains(keyword)){
+						minDistance = distance;
+						distance = MAX_WORD_DISTANCE + 1;
+						continue l;
+					}// end if the current word contains the keyword
+				}// end foreach loop over all topic keywords
+
 				if(reverse){
 					index--;
 				}else{
@@ -235,11 +235,11 @@ public class WikiCrawler {
 			// remove this link from our list of response words
 			responseWords.remove(link_index);
 		}// end while loop over each duplicate link in the response
-		
+
 		if(minDistance > MAX_WORD_DISTANCE) {
 			return 0;
 		}else {
-			return 1/(minDistance + 2);
+			return 1/(minDistance+2);
 		}// end if distance > 20
 		
 	}// end function weight
