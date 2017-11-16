@@ -20,16 +20,23 @@ import java.util.regex.Pattern;
 * Topic-sensitive crawling, crawl pages only about a particular topic
 */
 public class WikiCrawler {
-
-	private static final String BASE_URL = "https://en.wikipedia.org";		// main URL to crawl
-	private static final int MAX_WORD_DISTANCE = 20;						// max distance a link should be away from a topic keyword
-	private String seedUrl;	 												// original URL to begin crawling
-	private int max;  		 												// max number of pages to be crawled
-	private String fileName; 												// file name for which graph to be written too
-	private ArrayList<String> keywords;										// topic keywords for topic-sensitive crawling
-	private boolean isWeighted;												// whether or not our graph is weighted
-	private Set<String> robots;												// Wikipedia robots.txt file of sites we don't want to crawl
 	
+	private static final String BASE_URL = "https://en.wikipedia.org";
+	private static final int MAX_WORD_DISTANCE = 20;
+	private String seedUrl;	 												
+	private int max;  		 												
+	private String fileName; 												
+	private ArrayList<String> keywords;										
+	private boolean isWeighted;												
+	private Set<String> robots;												
+	
+	/**
+     * @param seedURL String - Original relative URL to begin crawling
+     * @param keywords String[] - Topic keywords for topic-sensitive crawling
+     * @param max int - Max number of vertices to be crawled for our web graph
+     * @param fileName String - Name of output file for our web graph
+     * @param isWeighted boolean - Whether or not we should use topic-sensitive weighted queue
+     */
 	public WikiCrawler(String seedUrl, String[] keywords, int max, String fileName, boolean isWeighted){
 		this.seedUrl = seedUrl;
 		this.keywords = new ArrayList<>();
@@ -65,6 +72,10 @@ public class WikiCrawler {
 		
 	}// end WikiCrawler constructor
 	
+	/**
+     * This method crawls the web graph using BFS and 
+     * stores the result in the output file
+     */
 	public void crawl() throws IOException, InterruptedException {
 		// writes to the file named <fileName>, first line = number of vertices (max)
 		// next lines = a directed edge of the web graph
@@ -102,6 +113,12 @@ public class WikiCrawler {
 				
 	}// end function crawl()
 	
+	/**
+     * This method extracts the wiki links from a 
+     * given document
+     * @param doc String - Document to be parsed
+     * @return ArrayList<String> - Parsed links
+     */
 	private ArrayList<String> extractLinks(String doc) throws IOException {
 		// parse the string doc and return a list of links from the document (HTML)
 		ArrayList<String> links = new ArrayList<>();
@@ -129,6 +146,12 @@ public class WikiCrawler {
 		return links;
 	}// end function extractLinks(...)
 	
+	/**
+     * This method traverses a graph using BFS algorithm
+     * starting at the specified seed-url
+     * @param seed_url String - URL to begin crawling
+     * @return ArrayList<Edge> - Our crawled web graph
+     */
 	private ArrayList<Edge> BFSTraversal(String seed_url) throws InterruptedException, IOException {
 		// traverse the web graph starting at seed_url
 		WeightedQueue<Tuple<String>> queue = new WeightedQueue<>();
@@ -183,6 +206,13 @@ public class WikiCrawler {
 		return edges;
 	}// end function BFSTraversal()
 	
+	/**
+     * This method computes the weight of a link within
+     * a given response body by using the topic keywords
+     * @param link String - Extracted Wiki link
+     * @param response String - Response from our web request
+     * @return double - The weight of the link in relation to our keywords
+     */
 	private double weight(String link, String response) {
 		// compute weight for a link within a space according to topic keywords
 		if(!isWeighted) {
@@ -243,7 +273,12 @@ public class WikiCrawler {
 		}// end if distance > 20
 		
 	}// end function weight
-
+	
+	/**
+     * This method makes a GET request to specified URL
+     * @param url String - Relative URL where we send the request
+     * @return String - The response for our request (empty string if 404)
+     */
 	private String request(String url) throws IOException {
 		// initialize streams and readers
 		InputStream is;
