@@ -94,6 +94,7 @@ public class PageRank {
      * @param fileName String with address to file with edges in WebGraph
      */
     private void initializeGraph(String fileName) {
+        System.out.println("initializeGraph");
         BufferedReader br = null;
         FileReader fr = null;
 
@@ -144,6 +145,10 @@ public class PageRank {
         this.numEdges++;
     }
 
+    /**
+     * This method adds a vertex to the page rank vectors
+     * @param vertex String - name of vertex
+     */
     private void addVertex(String vertex) {
         if (!defaultNextStepPageRank.containsKey(vertex)) {
             // Populate page rank vectors
@@ -152,12 +157,22 @@ public class PageRank {
         }
     }
 
+    /**
+     * This method computes the final page rank vector.
+     * The final page rank vector will be in the instance variable 'pagerank' when this method completes.
+     */
     private void computePageRankVector() {
+        System.out.println("computePageRankVector");
         while (!isConverged()) {
             computeNextStepPageRank();
         }
     }
 
+    /**
+     * This method is a sub routine of computerPageRankVector().
+     * This method computes the next step page rank, Pn+1()
+     * Based on the algorithm from the "Pagerank" notes provided by the professor.
+     */
     private void computeNextStepPageRank() {
         pageRank = nextStepPageRank;
         nextStepPageRank = (HashMap<String, Double>) defaultNextStepPageRank.clone();
@@ -201,6 +216,11 @@ public class PageRank {
         }
     }
 
+    /**
+     * This method checks if the average difference of
+     * the previous pageRank and the nextStepPageRank are <= approximation threshold.
+     * @return boolean
+     */
     private boolean isConverged() {
         if (pageRank == null) return false;
 
