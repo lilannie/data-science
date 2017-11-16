@@ -12,23 +12,24 @@ import java.util.Set;
  */
 public class WikiTennisRanker {
 
+	static final double approx = 0.01;
+	static final int top = 10;
+
     public static void main(String[] args) {
-    	double approx = 0.01;
-    	int pages = 10;
-    	
-    	PageRank pr = new PageRank("wikiTennis.txt", approx);
+    	//PageRank p = new PageRank("wikiTennis.txt", approx);
+    	PageRank p = new PageRank("project3/wikiTennis.txt", approx);
     	
     	System.out.println("Highest page rank:");
-    	String[] topPageRank = pr.topKPageRank(pages);
-    	prettyPrint(topPageRank);
+    	String[] topPageRank = p.topKPageRank(top);
+    	p.prettyPrint(topPageRank);
     	
     	System.out.println("Highest in-degree:");
-    	String[] topInDegree = pr.topKInDegree(pages);
-    	prettyPrint(topInDegree);
+    	String[] topInDegree = p.topKInDegree(top);
+    	p.prettyPrint(topInDegree);
     	
     	System.out.println("Highest out-degree:");
-    	String[] topOutDegree = pr.topKOutDegree(pages);
-    	prettyPrint(topOutDegree);
+    	String[] topOutDegree = p.topKOutDegree(top);
+    	p.prettyPrint(topOutDegree);
     	
     	// print out the jaccard similarties between the lists
     	System.out.printf("Jaccard page rank vs. in-degree: %.2f\n", jaccard(topPageRank, topInDegree));
@@ -56,16 +57,5 @@ public class WikiTennisRanker {
     	    	
     	return (double) intersect.size() / union.size();
     }// end function jaccard
-    
-    /**
-     * This method prints out a string array formatted nicely
-     * @param arr String[] - String array to be printed
-     */
-    public static void prettyPrint(String[] arr) {
-    	for(int i = 0; i < arr.length; i++) {
-    		System.out.println((i+1) + ": " + arr[i]);
-    	}
-    	System.out.println();
-    }// end function prettyPrint
-    
+
 }// end class WikiTennisRanker

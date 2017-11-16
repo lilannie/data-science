@@ -23,7 +23,8 @@ public class WikiCrawler {
 	
 	private static final String BASE_URL = "https://en.wikipedia.org";
 	private static final int MAX_WORD_DISTANCE = 20;
-	private String seedUrl;	 												
+
+	private String seedUrl;
 	private int max;  		 												
 	private String fileName; 												
 	private ArrayList<String> keywords;										
@@ -31,7 +32,7 @@ public class WikiCrawler {
 	private Set<String> robots;												
 	
 	/**
-     * @param seedURL String - Original relative URL to begin crawling
+     * @param seedUrl String - Original relative URL to begin crawling
      * @param keywords String[] - Topic keywords for topic-sensitive crawling
      * @param max int - Max number of vertices to be crawled for our web graph
      * @param fileName String - Name of output file for our web graph
@@ -269,7 +270,7 @@ public class WikiCrawler {
 		if(minDistance > MAX_WORD_DISTANCE) {
 			return 0;
 		}else {
-			return 1/(minDistance+2);
+			return (double) 1/(minDistance+2);
 		}// end if distance > 20
 		
 	}// end function weight
@@ -314,7 +315,7 @@ public class WikiCrawler {
 		rd.close();
 		return response.toString();
 	}// end function request
-	
+
 	public static void main(String[] args) throws InterruptedException, IOException {
 		String[] topics = {"tennis", "grand slam"};
 		WikiCrawler w = new WikiCrawler("/wiki/tennis", topics, 1000, "WikiTennisGraph.txt", true);

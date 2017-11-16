@@ -182,6 +182,8 @@ public class PageRank {
         for (String p: pages) {
             double previousRank = pageRank.get(p);  // Get Pn(p)
             HashSet<String> linksInPage = graph.get(p);
+            if(linksInPage == null)
+                continue;
 
             switch (linksInPage.size()) {
                 // if Number of links in p is equals zero then
@@ -324,6 +326,17 @@ public class PageRank {
 
         return topK;
     }
+
+    /**
+     * This method prints out a string array formatted nicely
+     * @param arr String[] - String array to be printed
+     */
+    public void prettyPrint(String[] arr) {
+        for(int i = 0; i < arr.length; i++) {
+            System.out.println((i+1) + ": " + arr[i]);
+        }
+        System.out.println();
+    }// end function prettyPrint
 
     public static void main(String[] args) {
         PageRank pr = new PageRank("WikiTennisGraph.txt", 0.0);
