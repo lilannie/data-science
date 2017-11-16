@@ -16,7 +16,7 @@ public class Edge {
     @Override
     public boolean equals(Object o){
         Edge e = (Edge) o;
-        return this.start == e.start && this.end == e.end;
+        return this.start.equals(e.start) && this.end.equals(e.end);
     } // end function equals()
 
 } // end class Edge
