@@ -221,16 +221,26 @@ public class PageRank {
      * the previous pageRank and the nextStepPageRank are <= approximation threshold.
      * @return boolean
      */
-    private boolean isConverged() {
+    private boolean isConverged() { // TODO check if this is correct
         if (pageRank == null) return false;
 
-        double sumOfDifferences = 0;
+//        double dotProduct = 0;
+//        double pageRank_L2 = 0;
+//        double nextStepPageRank_L2 = 0;
+
+        double euclidean_dis = 0.0;
 
         for (String page: pageRank.keySet()) {
-            sumOfDifferences += Math.abs(nextStepPageRank.get(page) - pageRank.get(page));
+            double pageRank_val = pageRank.get(page);
+            double nextStepPageRank_val = nextStepPageRank.get(page);
+
+            euclidean_dis += Math.pow((nextStepPageRank_val - pageRank_val), 2); // TODO check pow function
+//            dotProduct += nextStepPageRank.get(page) * pageRank_val;
+//            pageRank_L2 += Math.pow(pageRank.get(page), 2);
+//            pageRank_L2 += Math.pow(nextStepPageRank.get(page), 2);
         }
 
-        return (sumOfDifferences/this.numVertices) <= approximation;    // TODO implement Norm()
+        return Math.sqrt(euclidean_dis) <= approximation;
     }
 
     /**
