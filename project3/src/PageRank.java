@@ -223,26 +223,18 @@ public class PageRank {
      * the previous pageRank and the nextStepPageRank are <= approximation threshold.
      * @return boolean
      */
-    private boolean isConverged() { // TODO check if this is correct
+    private boolean isConverged() { // Uses L2 Distance
         if (pageRank == null) return false;
 
-//        double dotProduct = 0;
-//        double pageRank_L2 = 0;
-//        double nextStepPageRank_L2 = 0;
-
-        double euclidean_dis = 0.0;
+        double l2_dist = 0.0;
 
         for (String page: pageRank.keySet()) {
             double pageRank_val = pageRank.get(page);
             double nextStepPageRank_val = nextStepPageRank.get(page);
-
-            euclidean_dis += Math.pow((nextStepPageRank_val - pageRank_val), 2); // TODO check pow function
-//            dotProduct += nextStepPageRank.get(page) * pageRank_val;
-//            pageRank_L2 += Math.pow(pageRank.get(page), 2);
-//            pageRank_L2 += Math.pow(nextStepPageRank.get(page), 2);
+            l2_dist += Math.abs(nextStepPageRank_val - pageRank_val);
         }
 
-        return Math.sqrt(euclidean_dis) <= approximation;
+        return l2_dist <= approximation;
     }
 
     /**
@@ -331,7 +323,7 @@ public class PageRank {
      * This method prints out a string array formatted nicely
      * @param arr String[] - String array to be printed
      */
-    public void prettyPrint(String[] arr) {
+    public static void prettyPrint(String[] arr) {
         for(int i = 0; i < arr.length; i++) {
             System.out.println((i+1) + ": " + arr[i]);
         }
@@ -339,18 +331,20 @@ public class PageRank {
     }// end function prettyPrint
 
     public static void main(String[] args) {
-        PageRank pr = new PageRank("WikiTennisGraph.txt", 0.0);
-        System.out.println(pr.numEdges());
+        PageRank pr = new PageRank("WikiTennisGraph.txt", 0.09);
+        System.out.println("numEdges: "+pr.numEdges());
 
         String[] topK = pr.topKPageRank(10);
-        System.out.println(topK);
-        System.out.println(pr.topKInDegree(10));
-        System.out.println(pr.topKOutDegree(10));
+        System.out.println("topK");
+        prettyPrint(topK);
+        System.out.println("topKInDegree");
+        prettyPrint(pr.topKInDegree(10));
+        System.out.println("topKOutDegree");
+        prettyPrint(pr.topKOutDegree(10));
 
         String topPage = topK[0];
-        System.out.println(pr.pageRankOf(topPage));
-        System.out.println(pr.inDegreeOf(topPage));
-        System.out.println(pr.outDegreeOf(topPage));
-
+        System.out.println("pageRankOf: "+pr.pageRankOf(topPage));
+        System.out.println("inDegreeOf: "+pr.inDegreeOf(topPage));
+        System.out.println("outDegreeOf: "+pr.outDegreeOf(topPage));
     }
 }
