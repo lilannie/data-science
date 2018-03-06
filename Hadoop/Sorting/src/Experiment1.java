@@ -19,6 +19,7 @@ public class Experiment1 extends Configured implements Tool {
 	
 	@Override
 	public int run(String[] args) throws Exception {
+		/*** Configure the Hadoop Job **/
 		Job job = Job.getInstance(new Configuration());
 		
 		Configuration conf = job.getConfiguration();
@@ -27,10 +28,12 @@ public class Experiment1 extends Configured implements Tool {
 		job.setJarByClass(Experiment1.class);
 		job.setJobName("Experiment 1 - TotalOrderPartitioner with InputSampler");
 
+		/*** Input and Output paths are specified in the command line arguments **/
 		FileInputFormat.setInputPaths(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
     
 		job.setNumReduceTasks(reduce_tasks);
+		/*** Here I use KeyValueTextInputFormat because both the key and the value are type Text **/
 		job.setInputFormatClass(KeyValueTextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		
@@ -43,9 +46,11 @@ public class Experiment1 extends Configured implements Tool {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 
+		/*** Configure the partitioner **/
 		Path partitionFile = new Path(partitionDir);
 		TotalOrderPartitioner.setPartitionFile(conf, partitionFile);
 		
+		/*** Tell the partitioner to use an InputSampler to partition **/
 		InputSampler.Sampler<Text, Text> sampler = new InputSampler.RandomSampler<Text, Text>(0.1, 10000, 10);
 		InputSampler.writePartitionFile(job, sampler);
 
@@ -60,18 +65,19 @@ public class Experiment1 extends Configured implements Tool {
 			System.exit(-1);
 		}
 	  
+		/*** Delete any existing directories **/
 		Configuration conf = new Configuration();
 		Path output = new Path(args[1]);
 		Path partition = new Path(partitionDir);
 		FileSystem hdfs = FileSystem.get(conf);
 
-		// delete existing directory
 		if (hdfs.exists(output)) hdfs.delete(output, true);
 		if (hdfs.exists(partition)) hdfs.delete(partition, true);
 
+		/*** Run the Hadoop Job **/
 		int exitCode = ToolRunner.run(new Experiment1(), args);
 		
-		// delete existing directory
+		/*** Delete any temporary files **/
 		if (hdfs.exists(partition)) hdfs.delete(partition, true);
 		
 		System.exit(exitCode);
