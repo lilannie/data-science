@@ -5,6 +5,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.io.IOException;
 import java.util.LinkedList;
 
+/**
+ * Output Objects with the Top Ten Count
+ * @author Annie Steenson
+ */
 public class OutputTopCountReducer extends Reducer<IntWritable, Text, Text, IntWritable> {
     private LinkedList<String> top10 = new LinkedList<>();
     private Text hashtag = new Text();

@@ -12,16 +12,19 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.util.LineReader;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
+/**
+ * Custom RecordReader to read JSON twitter objects
+ * @author Annie Steenson
+ */
 public class JsonRecordReader extends RecordReader <LongWritable, Text> {
-	private LineReader lineReader = null;
-    private LongWritable key = null;
-    private Text value = null;
-    private long start, end, position, no_of_calls;
+    private LineReader lineReader;
+    private LongWritable key;
+    private Text value;
+    long start, end, position, no_of_calls;
 
-    private boolean foundEndFile = false;
+    /*** Use this variable to mark when I am at a beginning of a input split **/
+    private boolean foundBeginObject = false;
 
     @Override
     public void initialize(InputSplit genericSplit, TaskAttemptContext context) throws IOException {
@@ -39,6 +42,21 @@ public class JsonRecordReader extends RecordReader <LongWritable, Text> {
         input_file.seek(start);
 
         lineReader = new LineReader(input_file, conf);
+
+        // Find the first tweet object
+        // Had to add this in case some tweets were divided between input splits
+        Text temp_text = new Text("");
+        int read_length;
+
+        while (position < end) {
+            read_length = lineReader.readLine(temp_text);
+            position = position + read_length;
+
+            if (temp_text.toString().equals("{")) {
+                foundBeginObject = true;
+                break;
+            }
+        }
 
         no_of_calls = 0;
     }
@@ -71,64 +89,90 @@ public class JsonRecordReader extends RecordReader <LongWritable, Text> {
 
     @Override
     public boolean nextKeyValue() throws IOException {
-        if (foundEndFile)
-            return false;
-
         no_of_calls = no_of_calls + 1;
 
-        // Begin reading keyvalue pairs
-        if (key == null && value == null) {
+        if (position >= end)  {
+            return false;
+        }
+
+        if (key == null) {
             key = new LongWritable();
-            value = new Text(" ");
-
-            lineReader.readLine(new Text()); // Read first line "["
-            no_of_calls = no_of_calls + 1;
         }
 
-        if (foundTweet()) {
-            key.set(no_of_calls);
-            return true;
+        if (value == null) {
+            value = new Text("");
         }
 
-        return false;
+        key.set(no_of_calls);
+
+        // Look for the next tweet
+        return foundTweet();
     }
 
     private boolean foundTweet() throws IOException {
-        String json = "";
-        Text temp_text = new Text(" ");
+        Text temp_text = new Text("");
+        int read_length = 0;
+        StringBuilder json = new StringBuilder();
 
-        int read_length = lineReader.readLine(temp_text);
-        position = position + read_length;
-        json += temp_text.toString();
-
-        // Terminate if you find the end of the file "]"
-        if (json.compareTo("]") == 0) {
-            foundEndFile = true;
-            return false;
+        // If you are at the first object in the input split, add the beginning curly brace
+        if (foundBeginObject) {
+            json.append("{");
         }
 
-        Stack<Character> stack = new Stack<>();
-        if (temp_text.toString().contains("{")) stack.push('b'); // b for beginning bracket
-        else return false;  // NOTE: Does not handle invalid JSON Objects
+        read_length = lineReader.readLine(temp_text);
+        position = position + read_length;
+        json.append(temp_text.toString());
 
-        while (!stack.isEmpty()) {
+        // Check if this is the end of the tweet object list
+        if (json.toString().equals("]")) return false;
+
+        // Initialize a stack to keep track of matching curly braces and brackets
+        Stack<Character> stack = new Stack<>();
+        if (foundBeginObject || json.toString().equals("{")) {
+            stack.push('{');
+            foundBeginObject = false;
+        }
+        else {
+            return false;  // NOTE: Does not handle invalid JSON Objects
+        }
+
+        temp_text.clear();
+
+        // Aggregate the tweet object or until we reach the end of the input split
+        while (!stack.isEmpty() && position < end) {
             read_length = lineReader.readLine(temp_text);
             position = position + read_length;
 
             String temp_text_str = temp_text.toString();
-            json += temp_text_str;
+            if (temp_text_str.equals("{")) {
+                stack.push('{');
+            }
+            else if (temp_text_str.equals("[")) {
+                stack.push('[');
+            }
+            else if (temp_text_str.equals("}") || temp_text_str.equals("},")) {
+                stack.pop();
+            }
+            else if (temp_text_str.equals("]") || temp_text_str.equals("],")) {
+                stack.pop();
+            }
 
-            // b for beginning bracket
-            if (temp_text_str.contains("{") || temp_text_str.contains("[")) stack.push('b');
-            // Found ending bracket
-            if (temp_text_str.contains("}") || temp_text_str.contains("]")) stack.pop();
-
-            // NOTE: Does not handle invalid JSON Objects
+            json.append(temp_text_str);
+            temp_text.clear();
         }
 
-        if (json.charAt(json.length()-1) == ',') json = json.substring(0, json.length() - 1);
 
-        value.set(json);
+        // If we went past the input split end, then return false
+        if (position >= end) {
+            return false;
+        }
+
+        // Remove any trailing commas so the JSONParser can parse the tweet
+        if (json.charAt(json.length()-1) == ',') {
+            json = new StringBuilder(json.substring(0, json.length() - 1));
+        }
+
+        value.set(json.toString());
         return true;
     }
 }

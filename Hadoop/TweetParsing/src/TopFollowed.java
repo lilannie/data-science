@@ -17,6 +17,9 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 
+/**
+ * @author Annie Steenson
+ */
 public class TopFollowed {
 	private static String tempFile = "/user/lilannie/lab5/exp2/temp";
 
@@ -71,7 +74,12 @@ public class TopFollowed {
 		if (hdfs.exists(temp)) hdfs.delete(temp, true);
 	}
 
-	/******* First Job Mapper *******/
+	/******* First Job Mapper
+	 *
+	 *	For every tweet:
+	 *		emit( key = user, value = user's follower count )
+	 *
+	 *******/
 	public static class EnumerateFollowers extends Mapper<LongWritable, Text, Text, IntWritable> {
 		private JSONParser parser = new JSONParser();
 
@@ -90,7 +98,12 @@ public class TopFollowed {
 		}
 	}
 
-	/******* First Job Reducer *******/
+	/******* First Job Reducer
+	 *
+	 *	For every user:
+	 *		emit( key = user, value = total follower count )
+	 *
+	 *******/
 	public static class CountFollowers extends Reducer<Text, IntWritable, Text, IntWritable> {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException  {
 			int max = Integer.MIN_VALUE;
@@ -102,7 +115,11 @@ public class TopFollowed {
 		}
 	}
 
-	/******* HELPERS *******/
+	/******* HELPERS
+	 *
+	 * Creates a Job with the setup calls
+	 *
+	 *******/
 	private static Job createJob(Configuration conf, String name, int reduce_tasks, String inputFile, String outputFile) throws IOException {
 		// Create a Hadoop Job
 		Job job = Job.getInstance(conf, name);

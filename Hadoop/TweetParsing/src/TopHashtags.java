@@ -15,10 +15,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.HashSet;
 
+/**
+ * @author Annie Steenson
+ */
 public class TopHashtags {
     private static String tempFile = "/user/lilannie/lab5/exp1/temp";
 
@@ -73,10 +78,16 @@ public class TopHashtags {
         if (hdfs.exists(temp)) hdfs.delete(temp, true);
 	}
 
-    /******* First Job Map *******/
+    /******* First Job Map
+     *
+     * For every unique hashtag:
+     *      emit (key = 1, value = hashtag)
+     *
+     *******/
     public static class EnumerateHashtags extends Mapper<LongWritable, Text, Text, IntWritable>  {
         private JSONParser parser = new JSONParser();
         private IntWritable one = new IntWritable(1);
+        public static final Log log = LogFactory.getLog(EnumerateHashtags.class);
 
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException  {
             try {
@@ -85,24 +96,33 @@ public class TopHashtags {
 
                 emitHashtags(entities, context);
             } catch (ParseException e) {
-                e.printStackTrace();
+                log.error(e.toString());
             }
 		}
 
 		private void emitHashtags(JSONObject entities, Context context) throws IOException, InterruptedException {
             JSONArray hashtags = (JSONArray) entities.get("hashtags");
-            HashSet<Object> unique_tags = new HashSet<>(hashtags);
+            HashSet<String> unique_tags = new HashSet<>();
 
-            for (Object tag: unique_tags) {
+            for (Object tag: hashtags) {
                 JSONObject tagInfo = (JSONObject) tag;
-                context.write(new Text(tagInfo.get("text").toString()), one);
+                unique_tags.add(tagInfo.get("text").toString().toLowerCase());
+            }
+
+            for (String tag: unique_tags) {
+                context.write(new Text(tag), one);
             }
         }
 	}
 
-    /******* First Job Reduce *******/
+    /******* First Job Reduce
+     *
+     * For every unique hashtag:
+     *      emit (key = hashtag, value = count )
+     *
+     *******/
 	public static class CountHashtags extends Reducer<Text, IntWritable, Text, IntWritable>  {
-		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException  {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException  {
 		    int count = 0;
 			for (IntWritable val : values) {
 				count++;
@@ -111,7 +131,11 @@ public class TopHashtags {
 		}
 	}
 
-    /******* HELPERS *******/
+    /******* HELPERS
+     *
+     * Creates a Job with the setup calls
+     *
+     *******/
     private static Job createJob(Configuration conf, String name, int reduce_tasks, String inputFile, String outputFile) throws IOException {
         // Create a Hadoop Job
         Job job = Job.getInstance(conf, name);

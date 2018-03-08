@@ -20,7 +20,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class TopProflificHashtag {
+/**
+ * @author Annie Steenson
+ */
+public class TopProlificHashtag {
 	private static String tempFile = "/user/lilannie/lab5/exp3/temp";
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
@@ -74,7 +77,12 @@ public class TopProflificHashtag {
 		if (hdfs.exists(temp)) hdfs.delete(temp, true);
 	}
 
-	/******* First Job Mapper *******/
+	/******* First Job Mapper
+     *
+     *  For every tweet:
+     *      emit( key = user, value = tweet )
+     *
+     *******/
 	public static class GroupTweets extends Mapper<LongWritable, Text, Text, Text> {
 		private JSONParser parser = new JSONParser();
 
@@ -92,18 +100,35 @@ public class TopProflificHashtag {
 		}
 	}
 
-	/******* First Job Reducer *******/
+	/******* First Job Reducer
+     *
+     *  For every user:
+     *      emit( key = user, value = [ array of user's tweets ] )
+     *
+     *******/
 	public static class OutputUserTweets extends Reducer<Text, Text, Text, Text> {
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException  {
 			String tweets = "[";
+
 			for (Text tweet : values) {
-				tweets += tweet.toString();
+				tweets += tweet.toString() + ",";
 			}
+
+			if (tweets.charAt(tweets.length()-1) == ',') {
+				tweets = tweets.substring(0, tweets.length() - 1);
+			}
+
+			tweets += "]";
 			context.write(key, new Text(tweets));
 		}
 	}
 
-	/******* First Job Mapper *******/
+	/******* First Job Mapper
+     *
+     *  For every user:
+     *      emit( key = number of tweets, value = [ array of user's tweets ]
+     *
+     *******/
 	public static class CountTweets extends Mapper<Text, Text, IntWritable, Text> {
 		private JSONParser parser = new JSONParser();
 
@@ -118,12 +143,14 @@ public class TopProflificHashtag {
 		}
 	}
 
-	/******* First Job Reducer *******/
+	/******* First Job Reducer
+     *
+     *  Output the most common hashtag for each of the top ten prolific tweeter
+     *
+     ********/
 	public static class OutputProlificHashtags extends Reducer<IntWritable, Text, Text, Text> {
 		private JSONParser parser = new JSONParser();
 		private LinkedList<String> top10 = new LinkedList<>();
-		private Text userHashtag = new Text();
-		private IntWritable count = new IntWritable();
 
 		public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException  {
 			for (Text userTweets : values) {
@@ -143,14 +170,16 @@ public class TopProflificHashtag {
 					String screen_name = null;
 					JSONArray tweets = (JSONArray) parser.parse(userTweets);
 
+					// Variables to find the most common hashtag
 					HashMap<String, Integer> hashtagCount = new HashMap<>();
-
 					int max = Integer.MIN_VALUE;
 					String mostCommonHashtag = "";
 
+					// Iterate through the user's tweet
 					for (Object tweetObj: tweets) {
 						JSONObject tweet = (JSONObject) tweetObj;
 
+						// Store the screen name if it hasn't been stored
 						if (screen_name == null) {
 							JSONObject user = (JSONObject) tweet.get("user");
 							screen_name = user.get("screen_name").toString();
@@ -158,9 +187,11 @@ public class TopProflificHashtag {
 
 						JSONObject entities = (JSONObject) tweet.get("entities");
 						JSONArray hashtags = (JSONArray) entities.get("hashtags");
+
+						// Count each hashtag
 						for (Object tag: hashtags) {
 							JSONObject tagInfo = (JSONObject) tag;
-							String hashtag = tagInfo.get("text").toString();
+							String hashtag = tagInfo.get("text").toString().toLowerCase();
 
 							int count = hashtagCount.getOrDefault(hashtag, 0) + 1;
 							hashtagCount.put(hashtag, count);
@@ -170,10 +201,9 @@ public class TopProflificHashtag {
 								mostCommonHashtag = hashtag;
 							}
 						}
-
 					}
 
-					context.write(new Text("Screen name: "+screen_name), new Text(" Most Common Hashtag: "+mostCommonHashtag));
+					context.write(new Text(screen_name), new Text(mostCommonHashtag));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
@@ -183,13 +213,17 @@ public class TopProflificHashtag {
 		}
 	}
 
-	/******* HELPERS *******/
+    /******* HELPERS
+     *
+     * Creates a Job with the setup calls
+     *
+     *******/
 	private static Job createJob(Configuration conf, String name, int reduce_tasks, String inputFile, String outputFile) throws IOException {
 		// Create a Hadoop Job
 		Job job = Job.getInstance(conf, name);
 
 		// Attach the job to this Class
-		job.setJarByClass(TopProflificHashtag.class);
+		job.setJarByClass(TopProlificHashtag.class);
 
 		// Number of reducers
 		job.setNumReduceTasks(reduce_tasks);

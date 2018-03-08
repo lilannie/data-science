@@ -40,3 +40,5 @@ F17PA2/
 # Output files
 WikiTennisGraph.txt
 wikiCustom.txt
+
+out/
