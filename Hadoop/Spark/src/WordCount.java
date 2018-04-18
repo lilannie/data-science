@@ -48,6 +48,7 @@ public class WordCount {
 			}
 		}, numOfReducers);
 
+		// Swap the key words and value count
 		JavaPairRDD<Integer, String> swappedPairs = counts.mapToPair(new PairFunction<Tuple2<String, Integer>, Integer, String>() {
 			@Override
 			public Tuple2<Integer, String> call(Tuple2<String, Integer> item) throws Exception {
@@ -55,6 +56,7 @@ public class WordCount {
 			}
 		});
 
+		// Sort the words by count in descending order
 		JavaPairRDD<Integer, String> sortedCounts = swappedPairs.sortByKey(false, numOfReducers);
 
 		sortedCounts.saveAsTextFile(args[1]);

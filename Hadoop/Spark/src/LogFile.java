@@ -20,10 +20,12 @@ public class LogFile {
             System.exit(1);
         }
 
-        SparkConf sparkConf = new SparkConf().setAppName("LogFile in Spark");
+        SparkConf sparkConf = new SparkConf().setAppName("Lab 7 Exp 2");
         JavaSparkContext context = new JavaSparkContext(sparkConf);
         JavaRDD<String> ipLines = context.textFile("/cpre419/ip_trace");
 
+        // Get all ip logged connections
+        // Map each where key = connection_id and value = log string
         JavaPairRDD<String, String> ipConnections = ipLines.mapToPair(new PairFunction<String, String, String>() {
             @Override
             public Tuple2<String, String> call(String s) {
@@ -35,6 +37,8 @@ public class LogFile {
 
         JavaRDD<String> blockedLines = context.textFile("/cpre419/raw_block");
 
+        // Get all connections with the associated actions
+        // Map each where key = connection_id and value = action
         JavaPairRDD<String, String> connections = blockedLines.mapToPair(new PairFunction<String, String, String>() {
             @Override
             public Tuple2<String, String> call(String s) {
@@ -43,6 +47,7 @@ public class LogFile {
             }
         });
 
+        // Filter out the allowed connections
         JavaPairRDD<String, String> blockedConnections = connections.filter(new Function<Tuple2<String, String>, Boolean>() {
             @Override
             public Boolean call(Tuple2<String, String> connection) {
@@ -50,17 +55,20 @@ public class LogFile {
             }
         });
 
+        // Join the logged connections and the connection actions tables
         JavaPairRDD<String, Tuple2<String, String>> joinPairs = ipConnections.join(blockedConnections, numOfReducers);
 
-//        JavaPairRDD<String, String> logFile = joinPairs.mapToPair(new PairFunction<Tuple2<String, Tuple2<String, String>>, String, String>() {
-//            @Override
-//            public Tuple2<String, String> call(Tuple2<String, Tuple2<String, String>> item) throws Exception {
-//                return new Tuple2<String, String>(item._2._1 + " "+ item._2._2, "");
-//            }
-//        });
-//
-//        logFile.saveAsTextFile(args[0]);
+        // Recreated and save the log file
+        JavaPairRDD<String, String> logFile = joinPairs.mapToPair(new PairFunction<Tuple2<String, Tuple2<String, String>>, String, String>() {
+            @Override
+            public Tuple2<String, String> call(Tuple2<String, Tuple2<String, String>> item) throws Exception {
+                return new Tuple2<String, String>(item._2._1 + " "+ item._2._2, "");
+            }
+        });
 
+        logFile.saveAsTextFile(args[0]);
+
+        // Map each source_ip address to a single count
         JavaPairRDD<String, Integer> sourceIpOnes = joinPairs.mapToPair(new PairFunction<Tuple2<String, Tuple2<String, String>>, String, Integer>() {
             @Override
             public Tuple2<String, Integer> call(Tuple2<String, Tuple2<String, String>> item) throws Exception {
@@ -69,6 +77,7 @@ public class LogFile {
             }
         });
 
+        // Add up the number of times the source_ip was blocked
         JavaPairRDD<String, Integer> sourceIpCounts = sourceIpOnes.reduceByKey(new Function2<Integer, Integer, Integer>() {
             @Override
             public Integer call(Integer i1, Integer i2) {
@@ -76,6 +85,7 @@ public class LogFile {
             }
         }, numOfReducers);
 
+        // Swap the key count and value source_ip
         JavaPairRDD<Integer, String> swappedPairs = sourceIpCounts.mapToPair(new PairFunction<Tuple2<String, Integer>, Integer, String>() {
             @Override
             public Tuple2<Integer, String> call(Tuple2<String, Integer> item) throws Exception {
@@ -83,6 +93,7 @@ public class LogFile {
             }
         });
 
+        // Sort by number of times blocked
         JavaPairRDD<Integer, String> sortedCounts = swappedPairs.sortByKey(false, numOfReducers);
 
         sortedCounts.saveAsTextFile(args[1]);
